@@ -25,8 +25,14 @@ SOURCES =   cfasta_stream.cpp \
 
 OBJECTS = $(SOURCES:.cpp=.o)
 
-INCLUDES = -I.. -I../..
+INCLUDES = -I.. -I../.. $(INC)
 CFLAGS = -std=c++11 -O3 -Wno-deprecated-declarations
+
+ifdef USE_SRA
+
+CFLAGS += -DUSE_SRA=1
+
+endif
 
 all: libseq.a
 

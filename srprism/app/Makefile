@@ -9,12 +9,18 @@ LIBRARIES = ../lib/srprism/libsrprism.a \
 INCLUDES = -I. -I.. -I../lib
 CFLAGS = -std=c++11 -O3 -Wno-deprecated-declarations
 
-LIBS = -lz -lbz2
+ifdef USE_SRA
+
+LIBS = -pthread -lncbi-ngs-c++ -lngs-c++ -lncbi-vdb-static -ldl 
+
+endif
+
+LIBS += -lz -lbz2
 
 all: srprism
 
 srprism: $(OBJECTS) $(HEADERS)
-	g++ -o $@ $(OBJECTS) $(LIBRARIES) $(LIBS)
+	g++ $(LIB) -o $@ $(OBJECTS) $(LIBRARIES) $(LIBS)
 
 %.o: %.cpp $(HEADERS)
 	g++ $(INCLUDES) $(CFLAGS) -c -o $@ $<
