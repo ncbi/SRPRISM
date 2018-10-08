@@ -1,0 +1,727 @@
+SRPRISM - Short Read Alignment Tool
+
+======================================================================
+I.  SYNOPSIS
+
+    srprism [mode] [option]...
+
+======================================================================
+II. DESCRIPTION
+
+    Features:
+
+        - aligns sequences of length 16 and up to 8192 with up to
+            7 errors;
+        - guarantees that alignments with at most 1 error are found
+            when the length of the seeding area is >= 16 bp 
+            if such an alignment exists;
+        - guarantees that alignments with at most 2 errors are found
+            when the length of the seeding area is >= 32 bp
+            if such an alignment exists;
+        - guarantees that alignments with at most k errors (2 < k < 8)
+            are found when the length l of the seeding area is >=
+            16*(k+1) bp if such an alignment exists;
+        - can read data directly from SRA;
+        - supports paired aligments;
+        - if paired alignments are found for a query, then single
+            alignments are not reported;
+        - reports alignments with the smallest number of errors;
+        - mismatches are preferred to indels;
+        - supports searching alternate loci;
+        - supports output in SAM format;
+        - limited support for partial (non-global) alignments.
+
+    Limitations and caveats:
+
+        - colorspace input formats are supported by translating
+            the sequence to IUPACNA format; so true colorspace
+            alignments are not supported;
+        - srprism is currently tested on 64-bit linux platforms.
+
+
+    The behavior and command line options of srprism depend on 'command' 
+    parameter. The following commands are defined:
+
+        1. mkindex      - generate srprism database from the set of 
+                          sequences
+        2. search       - align queries to the database
+        3. help         - describes common options
+           help mkindex - describes options for mkindex command
+           help search  - describes options for search command
+
+    ==================================================================
+    1. Options syntax
+
+        Command line options to srprism have the following syntax:
+
+            --<option_name> [value]
+
+                or
+
+            -<short_options_name> [value]
+
+        Not all options have the short name. Some options do not
+        require a value. Such options are called flags.
+
+        In the following sections, when describing a command line 
+        option its short name is listed in brackets to the right of 
+        the long option name followed by "(flag)" if the option does 
+        not need an argument. For example:
+
+            no_qids [D] (flag)
+
+    ==================================================================
+    2. Common Command Line Options
+
+        This section describes command line options that are common 
+        to all modes. 
+
+        --------------------------------------------------------------
+        input-compression
+
+            value type:      string
+            possible values: auto none gzip bzip2
+            default:         auto
+
+            Compression type used for the input. The possible values
+            are "auto", "none", "gzip", and "bzip2". If the value
+            given is "auto" then the type of compression is guessed
+            from the file extension. This options is not applicable
+            for "sra" input format.
+
+        --------------------------------------------------------------
+        log-file
+
+            value type:      string
+
+            If this option is not provided, then standard error is
+            used as a destination for log messages.
+
+            This options specifies the log file name.
+
+        --------------------------------------------------------------
+        memory [M]
+
+            value type:      integer
+            possible values: > 0
+            default:         2048
+
+            Do not use more than this many megabytes of memory for 
+            internal dynamic data structures. This number does not 
+            include the footprint of the executable code, static data, 
+            or stack.
+
+        --------------------------------------------------------------
+        trace-level
+            
+            value type:      string
+            possible values: info warning error quiet
+            default:         warning
+                
+            Minimum message level to report to the log stream.
+
+            'info'    generates a lot of (mostly statistical)
+                      information about srprism progress
+            'warning' reports errors (including non-critical)
+            'error'   reports only critical errors
+            'quiet'   nothing is reported
+
+            The destination of the log messages is determined by
+            'log-file' option. However progress information is
+            always reported on the standard error.
+
+    ==================================================================
+    3. Command Line Options for 'mkindex' Mode
+
+        --------------------------------------------------------------
+        al-extend
+
+            value type:      integer
+            possible values: >= 0
+            default:         2000
+
+            Number of reference bases by which an alternate locus is
+            extended to the left (right) in the case of non-fuzzy left
+            (right) end.
+
+            NOTE: If this parameter is not 0 and an alt. locus region
+                  has non-fuzzy endpoints (see section III: 
+                  File Formats), then there is a possibility that
+                  an alignment is extended over the boundary of the
+                  region. This will lead to results with negative 
+                  coordinates or alignments that seem to be 
+                  partially outside of the corresponding subject
+                  sequence. This is not an error, but rather a 
+                  feature of SRPRISM. However some tools (e.g.
+                  SAM/BAM processors) will not accept/validate
+                  such results. If you do not want such results
+                  to be produced by SRPRISM, please make sure that
+                  the index is built with --al-extend 0 or all
+                  endpoints of alternate loci are specified "fuzzy"
+                  in the alternate loci specification file.
+
+        --------------------------------------------------------------
+        alt-loc [a]
+
+            value type:      string
+
+            Name of the alternative loci specification file. See 
+            section III for the desription of the format of such 
+            files.
+
+            This command line parameter is optional. If it is not
+            given, it is assumed that no alternative loci regions
+            are defined.
+
+        --------------------------------------------------------------
+        input [i]
+
+            value type:      string
+
+            Comma separated list of names of files containing the
+            database sequences.
+
+            This command line parameter is optional. It takes 
+            precedence over 'input-list' option. Either 'input'
+            or 'input-list' must be present on the command line.
+
+        --------------------------------------------------------------
+        input-format [F]
+
+            value type:      string
+            possible values: fasta fastq cfasta cfastq
+            default:         fasta
+
+            The input format name.
+
+        --------------------------------------------------------------
+        input-list [l]
+
+            value type:      string
+
+            Name of the file containing a list of input file names,
+            one name per line.
+
+            This command line parameter is optional and can be used
+            instead of 'input' option when the list of input files is
+            long. If both 'input' and 'input-list' options are 
+            present, then 'input-list' is ignored.
+
+        --------------------------------------------------------------
+        output [o]
+
+            value type:      string
+
+            Base name for generated database files.
+            
+            This is the required command line parameter.
+
+        --------------------------------------------------------------
+        seg-letters
+
+            value type:      integer
+            possible values: positive powers of 2
+            default:         8192
+
+            Number of letters in sequence store segment.
+
+            It is recommended that this value is set to less than 
+            half of the length of a typical sequence in the reference 
+            database. Each reference sequence occupies at least one 
+            segment and the sequence store can store at most 2^32 - 1 
+            bases. If the reference has a large number of very short 
+            sequence, decreasing this value can help to pack more 
+            sequences into the sequence store and optimize memory 
+            usage.
+
+    ==================================================================
+    4. Command Line Options for 'search' Mode
+
+        --------------------------------------------------------------
+        batch [b]
+
+            value type:      integer
+            possible values: > 0
+            default:         10000000
+
+            Process input in batches of at most this many queries.
+            The actual number of queries in a batch may be less due
+            to the lack of queries in the input.
+
+        --------------------------------------------------------------
+        batch-end
+
+            value type:      integer
+            possible values: >= 0
+
+            The number of the last batch to process.
+
+            This command line parameter is optional.
+
+        --------------------------------------------------------------
+        batch-start
+
+            value type:      integer
+            possible values: >= 0
+
+            The number of the first batch to process.
+
+            This command line parameter is optional.
+
+        --------------------------------------------------------------
+        discover-insert (flag)
+
+            Try to automatically discover the template length in 
+            paired-end runs.
+
+        --------------------------------------------------------------
+        discover-insert-and-stop (flag)
+
+            Unconditionally stop after template lengthanalysis,
+            dump the histogram and generate single results.
+
+        --------------------------------------------------------------
+        discover-insert-hist-name <file-name> [default: hist.out]
+
+            File name to dump the histogram after the template length
+            analysis.
+
+        --------------------------------------------------------------
+        errors [n]
+
+            value type:      integer
+            possible values: 0 - 7
+            default:         0
+            
+            Search for alignments with at most this many errors.
+
+        --------------------------------------------------------------
+        extra-tags
+
+            value type:     string
+
+            A string to add to each SAM entry. This should normally
+            contain a set of extra tags. Format correctness is not
+            verified by SRPRISM.
+            This command line parameter is optional.
+
+        --------------------------------------------------------------
+        index [I]
+
+            value type:      string
+
+            Base name for database files.
+
+            This is a required command line parameter.
+
+        --------------------------------------------------------------
+        input [i]
+
+            value type:      string
+
+            Specifies the source of the queries. The exact format 
+            depends on the value of "--input-format" option.
+
+            In the case of paired queries some input formats use two 
+            files that are read in parallel by srprism. In this case
+            the value of "--input <name>" option is interpreted as 
+            follows:
+
+                * if name is of the form "<name1>,<name2>" then name1 
+                and name2 are assumed to be the files containing 
+                respectively the first and the second members of the 
+                pairs.
+
+                * otherwise the single file <name> is assumed to
+                contain both mates which should share the same
+                id and be adjacent within the file (consequenctly
+                the file in this case should contain even number
+                of sequences).
+
+            Both files have to contain the same number of sequences 
+            and the ids of the corresponding sequences should be 
+            identical, unless they have the structure
+            <common_prefix>1 for the first mate and
+            <common_prefix>2 for the second mate, where
+            <common_prefix> ends in one of '.', '/', '_', in which
+            case the query id is taken to be <common_prefix> without
+            the last character.
+
+            The formats that have the above restriction are "fasta", 
+            "fastq", "cfasta", "cfastq".
+
+            "sam" input is different in that it always
+            consists of one input file. The mate pairing in reads
+            is expressed by means of the flags defined in SAM
+            format itself.
+
+            For "sra" input, a single SRA accession should be
+            provided.
+
+            This is a required command line parameter.
+
+        --------------------------------------------------------------
+        input-format [F]
+
+            value type:      string
+            possible values: fasta fastq cfasta cfastq sam sra
+            default:         fasta
+
+            The input format name.
+
+        --------------------------------------------------------------
+        mode [m]
+
+            value type:         string
+            possible values:    min-err, bound-err, sum-err, partial
+            default value:      min-err
+
+            min-err, bound-err, sum-err are global alignment modes;
+            partial can produce non-global alignments. Each mode
+            provides different ranking of the results. Only the results
+            with the minimum rank (per query) are reported.
+
+            Paired alignments are always ranked higher than single
+            alignments.
+
+            min-err:    single alignment rank is -(#errors); paired 
+                        alignments are ranked first by the max of
+                        ranks of the individual mate alignments,
+                        and then by the sum of ranks of the individual
+                        mate alignments.
+
+            sum-err:    the same as min-err, but paired alignments
+                        are ranked only by the sum of ranks of the
+                        individual mate alignments.
+
+            bound-err:  all alignments are ranked the same, but
+                        alignments with fewer errors are preferred
+                        when the total number of results per query
+                        exceeds the value provided by --results
+                        option.
+
+            partial:    partial looks for non-global alignments
+                        that include the seeding area (see options
+                        --sa-start and --sa-end). The rank of an
+                        individual alignment is 
+                        #exact_matches - #errors. For paired 
+                        alignments the rank is determined in the
+                        same way as for min-err mode.
+
+        --------------------------------------------------------------
+        no-qids [D] (flag)
+
+            Do not report ids for queries. Use their ordinal number 
+            instead.
+
+        --------------------------------------------------------------
+        no-sids (flag)
+
+            Do not report ids for database sequences. Use their 
+            ordinal number instead.
+
+        --------------------------------------------------------------
+        output [o]
+
+            value type:      string
+
+            File name for program output. 
+
+            This command line parameter is optional. If not present on
+            the command line, the standard output stream is used for 
+            output.
+
+        --------------------------------------------------------------
+        output-format [O]
+            
+            value type:      string
+            possible values: tabular sam
+            default:         tabular
+
+            The output format name. The possible values are "tabular", 
+            "sam". See Section III for the description of the output
+            formats.
+
+            SRPRISM produces one custom integer valued tag with SAM
+            format. The tag name is XA:i with values 0 or 1. The tag
+            is set to 1 for a read if and only if SRPRISM guarantees, 
+            listed in "features" section above, hold. The value 0 can
+            appear only when SRPRISM runs with reduce sensitivity
+            settings (i.e. the value of -R option is greater than 0).
+            The XA:i flag is only valid for min-err search mode.
+
+        --------------------------------------------------------------
+        pair-distance [s]
+
+            value type:      integer
+            possible values: >= 0
+            default:         500
+
+            For paired search, the target template length in bases.
+
+        --------------------------------------------------------------
+        pair-distance-fuzz [f]
+
+            value type:      integer
+            possible values: 0 - <pair-distance>
+            default:         400
+
+            Maximum acceptable fuzz (in bases) around the target 
+            template length. If d is the value of 
+            "--pair-distance" option and f is the value of the 
+            "--pair-distance-fuzz" option than the template length
+            for paired alignments must be in the interval 
+            [d-f,d+f] for the pair to be reported.
+
+        --------------------------------------------------------------
+        paired [p]
+
+            value type:      string
+            possible values: 'true', 'false'
+
+            Force paired or unpaired search.
+            This command line parameter is required.
+
+        --------------------------------------------------------------
+        randomize <true|false> [default: false]
+
+            Try to randomize the results of each query on subject 
+            coordinate.
+
+        --------------------------------------------------------------
+        random-seed <true|false> [default: false]
+
+            Use random seed for results randomization
+            (warning: results will not be reproducible).
+
+        --------------------------------------------------------------
+        repeat-threshold [R]
+
+            value type:      integer
+            possible values: >= 0
+            default:         4096
+
+            Do not use 16-mers that appear more than specified number
+            of times in the database for seeding. The value of 0
+            means that all 16-mers should be considered.
+
+        --------------------------------------------------------------
+        result-conf [c]
+
+            value type:      string
+            possible values: illumina 454 solid 
+                             <4-digit binary string>
+            default:         0100
+
+            Select which paired result configurations should be 
+            reported.
+
+            Selection is specified as a sequence of 4 digits from 
+            {0,1}, where i-th digit is 1 if the i-th configuration is 
+            selected.  Configurations are encoded by the second mate 
+            direction and position in the result relative to the first
+            mate, assuming that the first mate is matched in the 
+            forward direction.
+
+            Configurations are encoded via the following table:
+
+                0 - the second mate is forward aligned to the right 
+                    of the first mate;
+
+                1 - the second mate is reverse aligned to the right 
+                    of the first mate;
+
+                2 - the second mate is forward aligned to the left 
+                    of the first mate;
+
+                3 - the second mate is reverse aligned to the left 
+                    of the first mate.
+
+            The following aliases are supported:
+
+                illumina = 0100
+
+                454      = 0100
+
+                solid    = 0010
+
+        --------------------------------------------------------------
+        results [r]
+
+            value type:      integer
+            possible values: 1 - 255
+            default:         10
+
+            Maximum number of results to report per query.
+
+        --------------------------------------------------------------
+        sa-start
+
+            value type:      integer
+            possible values: > 0
+            default:         1
+
+            Index of the first position of the seeding area.
+
+        --------------------------------------------------------------
+        sa-end
+
+            value type:      integer
+            possible values: > 0
+            default:         8096
+
+            Index of the last position of the seeding area.
+
+        --------------------------------------------------------------
+        sam-header
+
+            value type:     string
+
+            Name of the file to include at the beginning of
+            the SAM output. It should normally contain fixed header
+            lines. SRPRISM does not verify the syntax of the file.
+            This command line parameter is optional.
+
+        --------------------------------------------------------------
+        skip-unmapped [S]
+
+            value type:      string
+            possible values: 'true', 'false'
+            default: true
+
+            If "true", do not generate records for unmapped queries 
+            in SAM output.
+
+        --------------------------------------------------------------
+        tmpdir [T]
+
+            value type:      string
+            default:         .
+
+            Directory to store temporary files.
+
+======================================================================
+III. FILE FORMATS
+
+    ==================================================================
+    1. Alternative Loci Specification File (ALSF)
+
+    ALSF is a text file. Empty lines and lines started with '#' are
+    considered comments and are ignored.
+
+    Each non-comment line describes one alternative locus and 
+    contains 9 text fields separated by spaces or tabs.
+
+    field 1: alternative locus name - this field is ignored by 
+                srprism;
+
+    field 2: alternative locus id - id of the input sequence for this
+                locus matching the id in the defline of that sequence
+                in the srprism input;
+
+    field 3: chromosome id - id of the reference sequence for this
+                locus matching the id of the defline of that sequence
+                in the srprism input;
+
+    field 4: alternate locus sequence orientation with respect to
+             the reference: '+' - same orientation; '-' - opposite
+             orientation;
+
+    field 5: chromosome start - first position of the alternate
+                locus in reference coordinates;
+
+    field 6: chromosome start is fuzzy ('y' or 'n');
+
+    field 7: chromosome end - last position of the alternate locus
+                in reference coordinates;
+
+    field 8: chromosome end is fuzzy ('y' or 'n');
+
+    field 9: alternate locus start: first position of the 
+                alternate locus in local coordinates;
+
+    field 10: alternate locus end: last position of the
+                alternative locus in local coordinates.
+                
+    Currently srprism puts the following limitations on ALSF files:
+
+        fields 9 and 10 must be equal respectively to 1 and
+        the length of the alternate locus sequence;
+
+        srprism assumes that an AL left (right) end is 'fuzzy'
+        if field 6 (8) is set to 'y' and field 9 (10) is equal
+        to 1 (length of the alternate locus sequence);
+
+        If left (right) end of the alternate locus sequence
+        is not 'fuzzy', then srprism extends it to the left
+        (right) by the number of bases determined by the value
+        of --al-extend option. The extension is done using the
+        bases of the reference sequence to the left (right) of
+        the alternate locus;
+
+        field 5 must be less or equal than field 7;
+
+        field 9 must be less or equal than field 10.
+
+======================================================================
+IV. EXAMPLES
+
+
+    Below are a few examples of srprism usage.
+
+    1. Creating a database named srprism-db with source sequences 
+    coming from file db1.fa and db2.fa. srprism is given 8 GB
+    of memory to use, only serious errors are reported to a
+    log file.
+
+    srprism mkindex --trace-level error --log-file srprism.log \
+        -i db1.fa,db2.fa -M 8192 -o srprism-db
+
+    2. The same as above with the source data files listed in 
+    dblist.txt with the following contents:
+
+    ==> dblist.txt <==
+    db1.fa
+    db2.fa
+
+    srprism mkindex --trace-level error --log-file srprism.log \
+        -l dblist.txt -M 8192 -o srprism-db
+
+    3. The same as above but assuming that input sequences contain
+    alternative loci described in the file db.al:
+
+    srprism mkindex --trace-level error --log-file srprism.log \
+        -l dblist.txt -M 8192 -o srprism-db -a db.al
+
+    4. Search the database srprism-db for paired hits, where 
+    query pairs are in the files queries1.fastq and queries2.fastq
+    in FastQ format. Look for results with at most 3 errors,
+    do not restrict for repetitive seeds, report at most 20 result.
+    Search for paired hits with mates are about 400 bp apart plus
+    or minus 100 bp. Report the results in SAM format.
+
+    srprism search -I srprism-db -i queries1.fastq,queries2.fastq \
+        -s 400 -f 100 -n 3 -R 0 -r 20 -F fastq -O sam -M 4096 \
+        -o srprism.out --paired true
+
+    5. Same as above but search for single hits for queries from
+    queries1.fastq.
+
+    srprism search -I srprism-db -i queries1.fastq -n 3 -R 0 -r 20 \
+        -F fastq -O sam -M 4096 -o srprism.out --paired false
+
+    6. A sample alternative loci specification file:
+
+#=================================================
+#alt_loci_name	alt_loci_acc	chr_name	strand  chrom_start	is_fuzzy	chrom_end	is_fuzzy	alt_loci_start	alt_loci_end
+HSCHR6_MHC_APD_CTG1	GL000250.1	NC_000006.11	+   28696604	n	33335493	n	1	4622290
+HSCHR6_MHC_COX_CTG1	GL000251.1	NC_000006.11	+   28477797	n	33351542	n	1	4795371
+HSCHR6_MHC_DBB_CTG1	GL000252.1	NC_000006.11	+   28696604	n	33329076	n	1	4610396
+HSCHR6_MHC_MANN_CTG1	GL000253.1	NC_000006.11    +	28696604	n	33225977	n	1	4683263	
+HSCHR6_MHC_MCF_CTG1	GL000254.1	NC_000006.11    +	28696604	n	33359642	n	1	4833398
+HSCHR6_MHC_QBL_CTG1	GL000255.1	NC_000006.11    +	28696604	n	33379750	n	1	4611984
+HSCHR6_MHC_SSTO_CTG1	GL000256.1	NC_000006.11    +	28659143	n	33448354	n	1	4928567
+HSCHR4_1_CTG9	GL000257.1	NC_000004.11    +	69170077	n	69878175	n	1	590426
+HSCHR17_1_CTG5	GL000258.1	NC_000017.10    +	43384864	n	44913631	n	1	1680828
+#=================================================
+
