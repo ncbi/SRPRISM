@@ -54,10 +54,10 @@ START_NS( srprism )
 //------------------------------------------------------------------------------
 // ALGORITHM VERSION INFORMATION
 //
-static const int VERSION_MAJOR = 2;
-static const int VERSION_MINOR = 6;
-static const int VERSION_POINT = 16;
-static const int VERSION_STATE = 2;
+static const int VERSION_MAJOR = 3;
+static const int VERSION_MINOR = 0;
+static const int VERSION_POINT = 0;
+static const int VERSION_STATE = 0;
 
 inline std::string GetVersionString( void )
 {

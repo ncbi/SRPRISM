@@ -62,14 +62,31 @@ Fast Short Read Aligner \
 static const COptionsParser::TParamPos CMD_POS = 0;
 static const COptionsParser::TParamPos HLP_SEC_POS = 1;
 static const std::string CMD_LABEL = "cmd";
+static const std::string CMD_DESCR = R"(
+    Action to perform. Possible values are:
+          help [search|mkindex] - get usage help;
+                                  general help if no option is given;
+                                  otherwise help on specified command.
+          search                - search for occurrences of the
+                                  queries in the database;
+          mkindex               - create index from a source database.
+    Type 'srprism help search' for more help on search command.
+    Type 'srprism help mkindex' for more help on mkindex comamnd.
+)";
+
+/*
 static const std::string CMD_DESCR = "\
 \tAction to perform. Possible values are:\n\
-\t\t* help           - \tget usage help;\n\
-\t\t* search         - \tsearch for occurrences of the queries in the database;\n\
-\t\t* mkindex        - \tcreate index from a source database.\n\
+\t\t* help [search|mkindex] - \tget usage help;\n\
+\t\t                          \t\tgeneral help if no option is given;\
+\t\t                          \t\totherwise help on specified command.\n\
+\t\t* search                - \tsearch for occurrences of the \
+\t\t                          \tqueries in the database;\n\
+\t\t* mkindex               - \tcreate index from a source database.\n\
 \tType 'srprism help search' for more help on search command.\n\
 \tType 'srprism help mkindex' for more help on mkindex comamnd.\n\
 ";
+*/
 
 //------------------------------------------------------------------------------
 // common options
@@ -687,12 +704,20 @@ int main( int argc, char * argv[] )
     static const char * MKIDX_CMD  = "mkindex";
     static const char * HELP_CMD   = "help";
 
-    static const char * HELP_PROMPT = 
-        "\nPlease type 'srprism help' for usage information.";
+    static const char * HELP_PROMPT = "\n"
+        "Please type 'srprism help' for general usage information;\n"
+        "       type 'srprism help search' for help on 'search' command;\n"
+        "       type 'srprism help mkindex' for help on 'mkindex' command.";
 
     std::string usage_string;
 
     try{
+        if( argc < 2 )
+        {
+            std::cerr << HELP_PROMPT << std::endl;
+            return NO_ARGS;
+        }
+
         // get the srprizm command
         //
         COptionsParser options_parser( 
@@ -711,10 +736,6 @@ int main( int argc, char * argv[] )
                 LOG_FNAME_DESCR, LOG_FNAME_LABEL );
 
         options_parser.Parse( argv + 1, argv + argc, false );
-
-        if( options_parser.NPositionals() == 0 ) {
-            return NO_ARGS;
-        }
 
         std::string command;
         options_parser.Bind( CMD_POS, command );

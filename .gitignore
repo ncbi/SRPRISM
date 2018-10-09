@@ -2,3 +2,4 @@
 *.o
 *.swp
 tags
+/srprism/app/srprism

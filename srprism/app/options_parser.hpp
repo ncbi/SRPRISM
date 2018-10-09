@@ -132,7 +132,7 @@ class COptionsParser
         static const Uint1 FMT_PROG_DESCR_START = 0;
         static const Uint1 FMT_PARAM_START = 8;
         static const Uint1 FMT_PARAM_DESCR_START = 8;
-        static const Uint1 FMT_LINE_RIGHT = 70;
+        static const Uint1 FMT_LINE_RIGHT = 80;
 
         struct SHelpGroup
         {

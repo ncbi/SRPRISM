@@ -1,8 +1,19 @@
+# UNCOMMENT THE FOLLOWING LINE TO ENABLE DIRECT SRA ACCESS
 # export USE_SRA = 1
+
+# UNCOMMENT THE FOLLOWING LINES TO POINT TO EXISTING NGS INSTALLATION
+# AND FILL IN THE CORRECT PATHS
+#
+# export NGS_PATH = 
+# export VDB_PATH =
 
 ifdef USE_SRA
 
+ifndef NGS_PATH
+
 NGS_DIR := $(CURDIR)/NGS
+NGSDEP = $(NGS_DIR)/ngs.done
+
 VDB_PATH := $(NGS_DIR)/vdb_out
 NGS_PATH := $(NGS_DIR)/ngs_out
 BUILD_PATH := $(NGS_DIR)/build
@@ -12,7 +23,14 @@ VDB_LIB := -L $(VDB_PATH)/lib64
 NGS_INCL := -I $(NGS_PATH)/include
 NGS_LIB := -L $(NGS_PATH)/lib64
 
-NGSDEP = $(NGS_DIR)/ngs.done
+else
+
+VDB_INCL := -I $(VDB_PATH)/include
+VDB_LIB := -L $(VDB_PATH)/lib
+NGS_INCL := -I $(NGS_PATH)/include
+NGS_LIB := -L $(NGS_PATH)/lib
+
+endif
 
 endif
 
@@ -26,6 +44,8 @@ all: $(NGSDEP)
 
 ifdef USE_SRA
 
+ifndef NGS_PATH
+
 $(NGSDEP):
 	rm -fr $(NGS_DIR) ;
 	mkdir -p $(NGS_DIR)/ngs ;
@@ -37,6 +57,8 @@ $(NGSDEP):
 	cd $(NGS_DIR); git clone https://github.com/ncbi/ncbi-vdb.git ;
 	cd $(NGS_DIR)/ncbi-vdb; ./configure --prefix=$(VDB_PATH) --build-prefix=$(BUILD_PATH); make; make install ;
 	touch $@
+
+endif
 
 endif
 
