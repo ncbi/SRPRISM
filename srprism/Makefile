@@ -4,12 +4,12 @@
 # UNCOMMENT THE FOLLOWING LINES TO POINT TO EXISTING NGS INSTALLATION
 # AND FILL IN THE CORRECT PATHS
 #
-# export NGS_PATH = 
-# export VDB_PATH =
+# export NGS_HOME = 
+# export VDB_HOME =
 
 ifdef USE_SRA
 
-ifndef NGS_PATH
+ifndef NGS_HOME
 
 NGS_DIR := $(CURDIR)/NGS
 NGSDEP = $(NGS_DIR)/ngs.done
@@ -25,10 +25,10 @@ NGS_LIB := -L $(NGS_PATH)/lib64
 
 else
 
-VDB_INCL := -I $(VDB_PATH)/include
-VDB_LIB := -L $(VDB_PATH)/lib
-NGS_INCL := -I $(NGS_PATH)/include
-NGS_LIB := -L $(NGS_PATH)/lib
+VDB_INCL := -I $(VDB_HOME)/include
+VDB_LIB := -L $(VDB_HOME)/lib
+NGS_INCL := -I $(NGS_HOME)/include
+NGS_LIB := -L $(NGS_HOME)/lib
 
 endif
 
@@ -44,7 +44,7 @@ all: $(NGSDEP)
 
 ifdef USE_SRA
 
-ifndef NGS_PATH
+ifndef NGS_HOME
 
 $(NGSDEP):
 	rm -fr $(NGS_DIR) ;

@@ -28,14 +28,6 @@ particular purpose.
 Please cite the authors in any work or product based on this material.
 
 ==============================================================
-EXCEPTIONS (in all cases excluding NCBI-written makefiles):
-
-Files:    Integer.hpp  LargeInt.hpp  LargeInt1.hpp  LargeInt2.hpp
-Type:     Large integer implementation
-Authors:  R.Chikhi, G.Rizk, E.Drezen
-License:  GNU Affero General Public License version 3
-
-==============================================================
 Copyright F.A.Q.
 
 --------------------------------------------------------------

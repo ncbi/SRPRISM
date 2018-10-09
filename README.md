@@ -3,6 +3,7 @@ Version 3.0.0
 
 For questions regarding SRPRISM, please contact
     Aleksandr Morgulis (morgulis@ncbi.nlm.nih.gov)
+    or
     Richa Agarwala (agarwala@ncbi.nlm.nih.gov)
 
 ## Compilation
