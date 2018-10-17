@@ -6,7 +6,27 @@ I.  SYNOPSIS
     srprism [mode] [option]...
 
 ======================================================================
-II. DESCRIPTION
+II. QUICK USAGE EXAMPLES
+
+    1. Create an SRPRISM database from a FASTA file.
+
+        srprism mkindex -i <in.fa> -o <dbname>
+
+    2. Create an SRPRISM database from a FASTA file and alternate
+       loci specification (see Section IV).
+
+        srprism mkindex -i <in.fa> -a <al_spec> -o <dbname>
+
+    3. Paired search using FASTA files as input.
+
+        srprism search -I <dbname> -i <mate_1.fa>,<mate_2.fa> -p true -o <result.sam>
+
+    4. Paired search using SRA accession.
+
+        srprism search -I <dbname> -F sra -i <sra_acc> -p true -o <result.sam>
+
+======================================================================
+III. DESCRIPTION
 
     Features:
 
@@ -145,7 +165,7 @@ II. DESCRIPTION
             (right) end.
 
             NOTE: If this parameter is not 0 and an alt. locus region
-                  has non-fuzzy endpoints (see section III: 
+                  has non-fuzzy endpoints (see section IV: 
                   File Formats), then there is a possibility that
                   an alignment is extended over the boundary of the
                   region. This will lead to results with negative 
@@ -166,7 +186,7 @@ II. DESCRIPTION
             value type:      string
 
             Name of the alternative loci specification file. See 
-            section III for the desription of the format of such 
+            section IV for the desription of the format of such 
             files.
 
             This command line parameter is optional. If it is not
@@ -432,25 +452,6 @@ II. DESCRIPTION
             output.
 
         --------------------------------------------------------------
-        output-format [O]
-            
-            value type:      string
-            possible values: tabular sam
-            default:         tabular
-
-            The output format name. The possible values are "tabular", 
-            "sam". See Section III for the description of the output
-            formats.
-
-            SRPRISM produces one custom integer valued tag with SAM
-            format. The tag name is XA:i with values 0 or 1. The tag
-            is set to 1 for a read if and only if SRPRISM guarantees, 
-            listed in "features" section above, hold. The value 0 can
-            appear only when SRPRISM runs with reduce sensitivity
-            settings (i.e. the value of -R option is greater than 0).
-            The XA:i flag is only valid for min-err search mode.
-
-        --------------------------------------------------------------
         pair-distance [s]
 
             value type:      integer
@@ -601,7 +602,7 @@ II. DESCRIPTION
             Directory to store temporary files.
 
 ======================================================================
-III. FILE FORMATS
+IV. FILE FORMATS
 
     ==================================================================
     1. Alternative Loci Specification File (ALSF)
@@ -664,7 +665,7 @@ III. FILE FORMATS
         field 9 must be less or equal than field 10.
 
 ======================================================================
-IV. EXAMPLES
+V. EXAMPLES
 
 
     Below are a few examples of srprism usage.
@@ -701,14 +702,14 @@ IV. EXAMPLES
     or minus 100 bp. Report the results in SAM format.
 
     srprism search -I srprism-db -i queries1.fastq,queries2.fastq \
-        -s 400 -f 100 -n 3 -R 0 -r 20 -F fastq -O sam -M 4096 \
+        -s 400 -f 100 -n 3 -R 0 -r 20 -F fastq -M 4096 \
         -o srprism.out --paired true
 
     5. Same as above but search for single hits for queries from
     queries1.fastq.
 
     srprism search -I srprism-db -i queries1.fastq -n 3 -R 0 -r 20 \
-        -F fastq -O sam -M 4096 -o srprism.out --paired false
+        -F fastq -M 4096 -o srprism.out --paired false
 
     6. A sample alternative loci specification file:
 

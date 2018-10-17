@@ -145,7 +145,7 @@ static const std::string SEARCH_MODE_DESCR   = "\
 static const std::string SEARCH_NERR_KEY     = "errors";
 static const std::string SEARCH_NERR_SKEY    = "n";
 static const std::string SEARCH_NERR_LABEL   = "max-errors";
-static const std::string SEARCH_NERR_DEFAULT = "0";
+static const std::string SEARCH_NERR_DEFAULT = "5";
 static const std::string SEARCH_NERR_DESCR   = "\
 \tSearch for alignments with at most this many errors (maximum is 7).\n\
 ";
@@ -214,6 +214,7 @@ given is \"auto\" then the type of compression is guessed from the file \
 extension.\n\
 ";
 
+/*
 static const std::string SEARCH_OUTFMT_KEY     = "output-format";
 static const std::string SEARCH_OUTFMT_SKEY    = "O";
 static const std::string SEARCH_OUTFMT_LABEL   = "format-name";
@@ -223,11 +224,12 @@ static const std::string SEARCH_OUTFMT_DESCR   = "\
 See the software documentation for the details of different supported \
 output formats.\n\
 ";
+*/
 
 static const std::string SEARCH_MEM_KEY     = "memory";
 static const std::string SEARCH_MEM_SKEY    = "M";
 static const std::string SEARCH_MEM_LABEL   = "megabytes";
-static const std::string SEARCH_MEM_DEFAULT = "2048";
+static const std::string SEARCH_MEM_DEFAULT = "4096";
 static const std::string SEARCH_MEM_DESCR   = "\
 \tDo not use more than this many megabytes of memory for internal \
 dynamic data structures. This number does not include the footprint \
@@ -476,7 +478,7 @@ static const std::string MKINDEX_OUTFMT_DESCR   = "\
 static const std::string MKINDEX_MEM_KEY     = "memory";
 static const std::string MKINDEX_MEM_SKEY    = "M";
 static const std::string MKINDEX_MEM_LABEL   = "megabytes";
-static const std::string MKINDEX_MEM_DEFAULT = "2048";
+static const std::string MKINDEX_MEM_DEFAULT = "4096";
 static const std::string MKINDEX_MEM_DESCR   = "\
 \tDo not use more than this many megabytes of memory for internal \
 dynamic data structures. This number does not include the footprint \
@@ -605,9 +607,11 @@ void SetArgsForSearch( COptionsParser & options_parser ) {
     options_parser.AddDefaultParam(
             SEARCH_NRES_KEY, SEARCH_NRES_SKEY, SEARCH_NRES_DEFAULT,
             SEARCH_NRES_DESCR, SEARCH_NRES_LABEL );
+    /*
     options_parser.AddDefaultParam(
             SEARCH_OUTFMT_KEY, SEARCH_OUTFMT_SKEY, SEARCH_OUTFMT_DEFAULT,
             SEARCH_OUTFMT_DESCR, SEARCH_OUTFMT_LABEL );
+    */
     options_parser.AddFlag(
             SEARCH_SD_KEY, SEARCH_SD_SKEY, SEARCH_SD_DESCR );
     options_parser.AddFlag(
@@ -861,7 +865,8 @@ int main( int argc, char * argv[] )
 
             if( command == SEARCH_CMD ) {
                 options_parser.Bind( SEARCH_NRES_KEY  , options.res_limit );
-                options_parser.Bind( SEARCH_OUTFMT_KEY, options.output_fmt );
+                // options_parser.Bind( SEARCH_OUTFMT_KEY, options.output_fmt );
+                options.output_fmt = "sam";
                 options_parser.Bind( 
                         SEARCH_SKIP_UNMAPPED_KEY, options.skip_unmapped );
             }
