@@ -1,4 +1,4 @@
-/*  $Id: query_store.hpp 460305 2015-02-26 13:23:23Z morgulis $
+/*  $Id: query_store.hpp 573034 2018-10-22 15:40:43Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -782,6 +782,20 @@ class CQueryStore
         bool QueriesReversed( void ) const { return qrv_; }
         TSeqSize GetSAStart( void ) const { return sa_start_; }
         TSeqSize GetSAEnd( void ) const { return sa_end_; }
+
+        typedef CSeqStoreBase::TPos TPos;
+
+        bool CheckTemplateConstraints(
+                TPos left_pos, TPos right_pos,
+                TSeqSize left_len, TSeqSize right_len ) const
+        {
+            auto lpos( std::min( left_pos, right_pos ) ),
+                 rpos( std::max( left_pos + left_len, right_pos + right_len ) ),
+                 tlen( rpos - lpos );
+            return /* left_pos <= right_pos && */
+                   tlen >= pair_distance_ - pair_fuzz_ &&
+                   tlen <= pair_distance_ + pair_fuzz_;
+        }
 
     private:
 

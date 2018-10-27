@@ -1,4 +1,4 @@
-/*  $Id: inplace_align.hpp 536631 2017-05-22 12:51:58Z morgulis $
+/*  $Id: inplace_align.hpp 573050 2018-10-22 16:56:26Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -105,14 +105,14 @@ class CInPlaceAlign
         bool CheckHit( const CHit & h, const Seg & s ) const
         {
             if( h.Strand() == STRAND_FW ) {
-                if( s.left && h.Anchor() >= anchor_start_ ) return false;
+                if( s.left && h.Anchor() > anchor_start_ ) return false;
                 if( !s.left && h.Anchor() < anchor_start_ ) return false;
                 return (h.Anchor() >= s.pos && 
                         h.Anchor() + h.AnchorSubjLen() <= s.pos + s.len);
             }
             else {
                 TPos a( h.Anchor() - h.AnchorSubjLen() );
-                if( s.left && a >= anchor_start_ ) return false;
+                if( s.left && a > anchor_start_ ) return false;
                 if( !s.left && a < anchor_start_ ) return false;
                 return (a >= s.pos && h.Anchor() <= s.pos + s.len);
             }

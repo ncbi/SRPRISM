@@ -1,4 +1,4 @@
-/*  $Id: search_pass_priv.hpp 557887 2018-02-22 13:21:46Z morgulis $
+/*  $Id: search_pass_priv.hpp 573077 2018-10-22 19:42:29Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -505,13 +505,56 @@ inline void CSearchPass_ByPaired< search_mode, hash, true >::SearchInPlace(
             TPos epp( i->Anchor() );
             TSData sepp( this->seqstore_.DecodePos( epp ) );
             CHit::TErrors pei( i->GetErrors() );
-            if( h.Strand() == STRAND_RV ) ep -= h.AnchorSubjLen();
-            if( i->Strand() == STRAND_RV ) epp -= i->AnchorSubjLen();
 
-            if( !this->seqstore_.CheckRegionPair( 
+            {
+                TSeqSize epos( sep.second ),
+                         ipos( sepp.second );
+
+                if( h.Strand() == STRAND_RV )
+                {
+                    epos -= h.AnchorSubjLen();
+                    ep -= h.AnchorSubjLen();
+                }
+
+                if( i->Strand() == STRAND_RV )
+                {
+                    ipos -= i->AnchorSubjLen();
+                    epp -= i->AnchorSubjLen();
+                }
+
+                bool good_template(
+                        this->queries_.CheckTemplateConstraints(
+                            epos, ipos,
+                            h.AnchorSubjLen(), i->AnchorSubjLen() ) );
+
+                if( !good_template ||
+                    !this->seqstore_.CheckRegionPair(
+                        ep, epp, h.AnchorSubjLen(), i->AnchorSubjLen() ) ) {
+                    continue;
+                }
+            }
+
+            /*
+            bool good_template(
+                    left_primary_hit ?
+                    this->queries_.CheckTemplateConstraints(
+                        ep, epp, h.AnchorSubjLen(), i->AnchorSubjLen() ) :
+                    this->queries_.CheckTemplateConstraints(
+                        epp, ep, i->AnchorSubjLen(), h.AnchorSubjLen() ) );
+
+            if( !good_template ||
+                !this->seqstore_.CheckRegionPair( 
                         ep, epp, h.AnchorSubjLen(), i->AnchorSubjLen() ) ) {
                 continue;
             }
+            */
+
+            /*
+            if( !this->seqstore_.CheckRegionPair(
+                        ep, epp, h.AnchorSubjLen(), i->AnchorSubjLen() ) ) {
+                continue;
+            }
+            */
 
             if( this->queries_.template AddPairedResult< TScoring >(
                         qs, qe, min_err,

@@ -1,4 +1,4 @@
-/*  $Id: batch.cpp 564741 2018-06-01 13:17:54Z morgulis $
+/*  $Id: batch.cpp 573027 2018-10-22 14:43:30Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -353,11 +353,16 @@ inline bool CBatch::CheckStrandConfig( CResult * l, CResult * r )
 {
     size_t ipam_idx( l->Strand( 0 ) == STRAND_FW ? 0 : 1 );
     const T_IPAM & ipam( pass_init_data_.ipam_vec.data[ipam_idx] );
-    T_IPAM lcl_ipam( 0xF );
+    // T_IPAM lcl_ipam( 0xF );
+    T_IPAM lcl_ipam( 0 );
 
+    /*
     if( l->SOff( 0 ) < r->SOff( 0 ) ) lcl_ipam = (ipam&IPAM_RIGHT_ENABLED);
     else if( l->SOff( 0 ) > r->SOff( 0 ) ) lcl_ipam = (ipam&IPAM_LEFT_ENABLED);
     else return false;
+    */
+    if( l->SOff( 0 ) <= r->SOff( 0 ) ) lcl_ipam |= (ipam&IPAM_RIGHT_ENABLED);
+    if( l->SOff( 0 ) >= r->SOff( 0 ) ) lcl_ipam |= (ipam&IPAM_LEFT_ENABLED);
 
     if( r->Strand( 0 ) == STRAND_FW ) return (lcl_ipam&IPAM_FW_ENABLED) != 0;
     else return (lcl_ipam&IPAM_RV_ENABLED) != 0;
