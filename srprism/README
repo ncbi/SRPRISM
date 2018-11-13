@@ -58,6 +58,14 @@ III. DESCRIPTION
             alignments are not supported;
         - srprism is currently tested on 64-bit linux platforms.
 
+    Important note:
+
+        -M option limits the amount of memory SRPRISM uses for its
+        internal dynamic data structures. This does not include
+        memory used by the application code, libraries, local and static
+        data. When running SRPRISM, it is recommended that additional
+        2 GB more memory is available in the system than specified by
+        -M option.
 
     The behavior and command line options of srprism depend on 'command' 
     parameter. The following commands are defined:
