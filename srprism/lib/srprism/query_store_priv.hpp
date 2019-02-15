@@ -304,7 +304,8 @@ void CQueryStore::InitialRead(
                 {
                     int max_n_hashes, max_seed_n_err;
                     ComputeQuerySpaceParams( 
-                            std::min( data.size, sa_end_ - sa_start_ ), 
+                            // std::min( data.size, sa_end_ - sa_start_ ), 
+                            std::min( data.size, sa_end_ ) - sa_start_,
                             n_err_, max_n_hashes, max_seed_n_err );
                     TWord * raw_data( 0 );
 
