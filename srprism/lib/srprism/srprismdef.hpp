@@ -1,4 +1,4 @@
-/*  $Id: srprismdef.hpp 564742 2018-06-01 13:21:19Z morgulis $
+/*  $Id: srprismdef.hpp 590234 2019-07-25 16:28:25Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -55,7 +55,7 @@ START_NS( srprism )
 // ALGORITHM VERSION INFORMATION
 //
 static const int VERSION_MAJOR = 3;
-static const int VERSION_MINOR = 0;
+static const int VERSION_MINOR = 1;
 static const int VERSION_POINT = 0;
 static const int VERSION_STATE = 0;
 
@@ -174,7 +174,7 @@ struct SErrType {
 
 //------------------------------------------------------------------------------
 /** Max number of errors supported by srprism search. */
-const int MAX_ERR = 7;
+const int MAX_ERR = 15;
 
 /** Max number of errors for short queries. */
 const common::Uint1 MAX_SHORT_ERR = 1;
@@ -183,7 +183,7 @@ const common::Uint1 MAX_SHORT_ERR = 1;
 const common::Uint1 MAX_MED_SEED_N_ERR = 2;
 
 /** Max number of errors in a seeding area */
-const common::Uint1 MAX_SEED_N_ERR = 7;
+const common::Uint1 MAX_SEED_N_ERR = 15;
 
 /** Max number of hashes in a query seeding area. */
 const int MAX_N_HASHES = MAX_SEED_N_ERR + 1;

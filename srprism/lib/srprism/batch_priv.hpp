@@ -1,4 +1,4 @@
-/*  $Id: batch_priv.hpp 539744 2017-06-27 13:06:13Z morgulis $
+/*  $Id: batch_priv.hpp 591182 2019-08-12 16:55:27Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -597,7 +597,8 @@ void CBatch::PostProcess(void)
             //
             int pg[2] = { 0, 0 };
 
-            if( search_mode_ == SSearchMode::DEFAULT ) {
+            if( search_mode_ == SSearchMode::DEFAULT ||
+                search_mode_ == SSearchMode::SUM_ERR ) {
                 if( !results.empty() ) {
                     CResult * r( *results.begin() );
 
@@ -622,8 +623,11 @@ void CBatch::PostProcess(void)
                                 else pg[0] = pg[1] = 0;
                             }
                             else {
-                                int nerr( std::max( 
-                                                r->NErr( 0 ), r->NErr( 1 ) ) );
+                                int nerr(
+                                    search_mode_ == SSearchMode::DEFAULT ? 
+                                        std::max( r->NErr( 0 ),
+                                                  r->NErr( 1 ) ) : 
+                                        r->NErr( 0 ) + r->NErr( 1 ) );
                                 pg[0] = pg[1] = ProvidesGuarantee( qm, nerr );
                             }
                         }

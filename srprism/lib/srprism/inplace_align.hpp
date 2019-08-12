@@ -1,4 +1,4 @@
-/*  $Id: inplace_align.hpp 573050 2018-10-22 16:56:26Z morgulis $
+/*  $Id: inplace_align.hpp 590234 2019-07-25 16:28:25Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -132,9 +132,64 @@ class CInPlaceAlign
                     n_err, 0, n_aligns_, n_ualigns_ );
         }
 
+        template< bool partial_align >
         bool UpdateResults( 
                 int & n_err, TResults & results, const CHit & res )
         {
+            bool full_res( res.LeftOffset() == 0 && res.RightOffset() == 0 );
+
+            if( partial_align && !full_res )
+            {
+                if( results.empty() )
+                {
+                    results.push_back( res );
+                }
+                else
+                {
+                    TResults::reverse_iterator i( results.rbegin() );
+                    TSeqSize iscore( i->AlignLen() - i->FullNErr() ),
+                             rscore( res.AlignLen() - res.FullNErr() );
+
+                    if( rscore > iscore )
+                    {
+                        results.clear();
+                        results.push_back( res );
+                    }
+                    else if( rscore == iscore )
+                    {
+                        bool dup( false );
+
+                        for( ; i != results.rend(); ++i )
+                        {
+                            if( i->Strand() == res.Strand() ) {
+                                if( res.Strand() == seq::STRAND_FW ) {
+                                    dup = (i->Anchor() == res.Anchor() ||
+                                           i->Anchor() + i->AnchorSubjLen() == 
+                                                res.Anchor() + res.AnchorSubjLen());
+                                }
+                                else {
+                                    dup = (i->Anchor() == res.Anchor() ||
+                                           i->Anchor() - i->AnchorSubjLen() == 
+                                                res.Anchor() - res.AnchorSubjLen());
+                                }
+
+                                if( dup ) {
+                                    if( res.FullNId() < i->FullNId() ) *i = res;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if( !dup && results.size() < res_lim_ )
+                        {
+                            results.push_back( res );
+                        }
+                    }
+                }
+
+                return false;
+            }
+
             int res_n_err( res.FullNErr() );
 
             if( res_n_err < n_err ) {
@@ -262,7 +317,7 @@ class CInPlaceAlign
                                             r, sa_start, sa_end, off, p + s, 
                                             HASH_LEN, search_n_err_ ) ) {
                                     if( CheckHit( r, *i ) ) {
-                                        if( UpdateResults( n_err, res, r ) ) {
+                                        if( UpdateResults< partial_align>( n_err, res, r ) ) {
                                             return;
                                         }
 
@@ -290,7 +345,7 @@ class CInPlaceAlign
                                             r, sa_start, sa_end, off, p + s, 
                                             HASH_LEN, search_n_err_ ) ) {
                                     if( CheckHit( r, *i ) ) {
-                                        if( UpdateResults( n_err, res, r ) ) {
+                                        if( UpdateResults< partial_align>( n_err, res, r ) ) {
                                             return;
                                         }
 
@@ -464,7 +519,7 @@ class CInPlaceAlign
                                             sa_off + offsets[j], p + s, 
                                             length, search_n_err_ ) ) {
                                     if( CheckHit( r, *i ) ) {
-                                        if( UpdateResults( n_err, res, r ) ) {
+                                        if( UpdateResults<partial_align>( n_err, res, r ) ) {
                                             return;
                                         }
 
@@ -499,7 +554,7 @@ class CInPlaceAlign
                                             sa_off + offsets[j], p + s, 
                                             length, search_n_err_ ) ) {
                                     if( CheckHit( r, *i ) ) {
-                                        if( UpdateResults( n_err, res, r ) ) {
+                                        if( UpdateResults<partial_align>( n_err, res, r ) ) {
                                             return;
                                         }
 

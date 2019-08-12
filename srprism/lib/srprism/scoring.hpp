@@ -1,4 +1,4 @@
-/*  $Id: scoring.hpp 540272 2017-07-05 16:21:51Z morgulis $
+/*  $Id: scoring.hpp 590234 2019-07-25 16:28:25Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -214,7 +214,7 @@ class CDefaultScoringSystem
 {
     public:
 
-        static const size_t MAX_N_ERR = 8;
+        static const size_t MAX_N_ERR = 16;
         typedef common::Uint2 TRank;
 
     private:
@@ -569,7 +569,7 @@ class CLenMinusErrScoringSystem
 
     public:
 
-        static const size_t MAX_N_ERR = 8;
+        static const size_t MAX_N_ERR = 16;
         typedef SRank TRank;
 
     private:
@@ -784,7 +784,7 @@ class CSumErrScoringSystem
 {
     public:
 
-        static const size_t MAX_N_ERR = 8;
+        static const size_t MAX_N_ERR = 16;
         typedef common::Uint1 TRank;
         typedef common::Uint1 TLevelCount;
         static const size_t MAX_N_RES = common::SIntTraits< TLevelCount >::MAX;
@@ -989,7 +989,7 @@ class CWeakScoringSystem
 {
     public:
 
-        static const size_t MAX_N_ERR = 8;
+        static const size_t MAX_N_ERR = 16;
         typedef common::Uint1 TRank;
 
     private:

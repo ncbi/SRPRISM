@@ -1,4 +1,4 @@
-/*  $Id: batch.hpp 460305 2015-02-26 13:23:23Z morgulis $
+/*  $Id: batch.hpp 591182 2019-08-12 16:55:27Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -236,7 +236,8 @@ class CBatch
         int ProvidesGuarantee( TQNum qn, int nerr ) {
             CQueryStore & qs( *queries_p_.get() );
 
-            if( search_mode_ == SSearchMode::DEFAULT ) {
+            if( search_mode_ == SSearchMode::DEFAULT ||
+                search_mode_ == SSearchMode::SUM_ERR ) {
                 if( !qs.HasRepHashes( qn ) ) return 1;
                 if( qs.HasRepBUHash( qn ) ) return 0;
 

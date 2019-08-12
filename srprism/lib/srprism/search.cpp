@@ -1,4 +1,4 @@
-/*  $Id: search.cpp 536751 2017-05-23 13:07:55Z morgulis $
+/*  $Id: search.cpp 591182 2019-08-12 16:55:27Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -232,7 +232,8 @@ CSearch::CSearch( const SOptions & options )
                     options.skip_unmapped,
                     options.force_paired, options.force_unpaired,
                     !options.use_qids,
-                    options.search_mode == SSearchMode::DEFAULT,
+                    ( options.search_mode == SSearchMode::DEFAULT ||
+                      options.search_mode == SSearchMode::SUM_ERR ),
                     seqstore_p_.get(), sidmap_p_.get() ) );
     }
 

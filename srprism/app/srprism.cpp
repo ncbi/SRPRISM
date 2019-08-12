@@ -1,4 +1,4 @@
-/*  $Id: srprism.cpp 536751 2017-05-23 13:07:55Z morgulis $
+/*  $Id: srprism.cpp 590234 2019-07-25 16:28:25Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -147,7 +147,7 @@ static const std::string SEARCH_NERR_SKEY    = "n";
 static const std::string SEARCH_NERR_LABEL   = "max-errors";
 static const std::string SEARCH_NERR_DEFAULT = "5";
 static const std::string SEARCH_NERR_DESCR   = "\
-\tSearch for alignments with at most this many errors (maximum is 7).\n\
+\tSearch for alignments with at most this many errors (maximum is 15).\n\
 ";
 
 static const std::string SEARCH_NRES_KEY     = "results";

@@ -31,7 +31,7 @@ III. DESCRIPTION
     Features:
 
         - aligns sequences of length 16 and up to 8192 with up to
-            7 errors;
+            15 errors;
         - guarantees that alignments with at most 1 error are found
             when the length of the seeding area is >= 16 bp 
             if such an alignment exists;
@@ -318,7 +318,7 @@ III. DESCRIPTION
         errors [n]
 
             value type:      integer
-            possible values: 0 - 7
+            possible values: 0 - 15
             default:         0
             
             Search for alignments with at most this many errors.
