@@ -1,5 +1,5 @@
 # SRPRISM - Single Read Paired Read Indel Substitution Minimizer
-Version 3.0.1
+Version 3.1.0
 
 For questions regarding SRPRISM, please contact
     Aleksandr Morgulis (morgulis@ncbi.nlm.nih.gov)
