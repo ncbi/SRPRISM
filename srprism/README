@@ -38,7 +38,7 @@ III. DESCRIPTION
         - guarantees that alignments with at most 2 errors are found
             when the length of the seeding area is >= 32 bp
             if such an alignment exists;
-        - guarantees that alignments with at most k errors (2 < k < 8)
+        - guarantees that alignments with at most k errors (2 < k < 16)
             are found when the length l of the seeding area is >=
             16*(k+1) bp if such an alignment exists;
         - can read data directly from SRA;
