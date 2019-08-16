@@ -112,10 +112,10 @@ class CQueryAcct_TBase : public CQueryAcct_Base
 
         template< bool paired >
         bool BestLevelFull( TQNum qn ) const
-        { return query_info_[qn].BestLevelFull< paired >( res_lim_ ); }
+        { return query_info_[qn].template BestLevelFull< paired >( res_lim_ ); }
 
         template< bool paired > int MaxErr( TQNum qn ) const
-        { return query_info_[qn].MaxErr< paired >(); }
+        { return query_info_[qn].template MaxErr< paired >(); }
 
         int GroupMaxErr( TQNum dup_idx ) const
         { return t_scoring::template MaxErr< true >( dup_data_[dup_idx] ); }

@@ -662,7 +662,7 @@ class CQueryStore
                     else AdjustMinRankInfo< t_scoring >( qn );
                 }
 
-                int max_err( qa->MaxErr< true >( qn ) );
+                int max_err( qa->template MaxErr< true >( qn ) );
 
                 if( max_err < min_err ||
                         (max_err == min_err && 
@@ -687,7 +687,7 @@ class CQueryStore
                         qn, align_len, n_err, n_gap, n_del, n_gopen ) );
 
             if( res ) {
-                int max_err( qa->MaxErr< false >( qn ) );
+                int max_err( qa->template MaxErr< false >( qn ) );
 
                 if( max_err < min_err ||
                         (max_err == min_err && 
@@ -715,13 +715,13 @@ class CQueryStore
         TSeqSize MaxQueryLen( void ) const { return max_query_len_; }
 
         template< typename t_scoring, bool paired > int MaxErr( TQNum qn ) const
-        { return GetScoringData< t_scoring >()->MaxErr< paired >( qn ); }
+        { return GetScoringData< t_scoring >()->template MaxErr< paired >( qn ); }
 
         template< typename t_scoring, bool paired > int 
         GroupMaxErr( TQNum qn ) const
         {
             if( IsUnique( qn ) || DupDataStart( qn )[N_MIN_RANK] == 0 ) {
-                return GetScoringData< t_scoring >()->MaxErr< paired >( qn );
+                return GetScoringData< t_scoring >()->template MaxErr< paired >( qn );
             }
             else {
                 return GetScoringData< t_scoring >()->GroupMaxErr(
