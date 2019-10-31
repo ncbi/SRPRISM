@@ -175,6 +175,35 @@ void CMkIdx::Validate( void )
                      "max memory must be positive" );
         }
     }
+
+    { // validation of segment length
+        if( ss_seg_len_ < 32 )
+        {
+            M_THROW( CException, VALIDATE,
+                     "segment length must be at least 32" );
+        }
+
+        if( ss_seg_len_ > 8192 )
+        {
+            M_TRACE( CTracer::WARNING_LVL,
+                     "segment length is greater than 8192; the value"
+                     " of 8192 will be used" );
+            ss_seg_len_ = 8192;
+        }
+
+        size_t t( ss_seg_len_ );
+
+        while( t > 1 )
+        {
+            if( t%2 != 0 )
+            {
+                M_THROW( CException, VALIDATE,
+                         "segment length must be a power of 2" );
+            }
+
+            t /= 2;
+        }
+    }
 }
 
 //------------------------------------------------------------------------------

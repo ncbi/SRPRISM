@@ -248,7 +248,7 @@ III. DESCRIPTION
         seg-letters
 
             value type:      integer
-            possible values: positive powers of 2
+            possible values: positive powers of 2 between 32 and 8192
             default:         8192
 
             Number of letters in sequence store segment.

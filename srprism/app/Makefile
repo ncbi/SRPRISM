@@ -20,7 +20,7 @@ LIBS += -lz -lbz2
 
 all: srprism
 
-srprism: $(OBJECTS) $(HEADERS)
+srprism: $(OBJECTS) $(HEADERS) $(LIBRARIES)
 	g++ $(LIB) -o $@ $(OBJECTS) $(LIBRARIES) $(LIBS)
 
 %.o: %.cpp $(HEADERS)

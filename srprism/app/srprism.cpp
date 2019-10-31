@@ -495,7 +495,8 @@ value is set to less than half of length of a typical sequence in the \
 reference database. Each reference sequence occupies at least one segment \
 and the sequence store can store at most 2^32 - 1 bases. If the reference \
 has a large number of very short sequence, decreasing this value can help \
-to pack more sequences into the sequence store and optimize memory usage.\n\
+to pack more sequences into the sequence store and optimize memory usage. \
+The value must be a power of 2 between 32 and 8192.\n\
 ";
 
 static const std::string MKINDEX_ALEXT_KEY      = "al-extend";
