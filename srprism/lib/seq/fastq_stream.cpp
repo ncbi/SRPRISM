@@ -52,7 +52,7 @@ bool CFastqStream::ReadLine(void)
 {
     if( in_->Eof() ) { done_ = true; return false; }
     else {
-        try { line_ = in_->GetLine(); }
+        try { line_.clear(); line_ = in_->GetLine(); }
         catch( CReadTextFile::CException & ) {}
 
         return true;

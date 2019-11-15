@@ -24,6 +24,7 @@ SOURCES =   binfile.cpp \
 OBJECTS = $(SOURCES:.cpp=.o)
 
 INCLUDES = -I.. -I../..
+#CFLAGS = -std=c++11 -g -O0 -Wno-deprecated-declarations
 CFLAGS = -std=c++11 -O3 -Wno-deprecated-declarations
 
 all: libcommon.a
