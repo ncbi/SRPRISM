@@ -589,13 +589,15 @@ void COutSAM::FinalizeBatch() {
     if( !skip_unmapped_ ) {
         TQueryOrdId last_id( qs_->size() );
         if( paired_ ) last_id /= 2;
-        last_id += q_adj_ + 1;
+        // last_id += q_adj_ + 1;
+        last_id += q_adj_;
 
-        while( !in_p_->Done() ) {
+        while( !in_p_->Done() && in_p_->QId() < last_id ) {
             if( !in_p_->Skip( in_p_->QId() + 1 ) ) break;
-            if( in_p_->QId() >= last_id ) break;
+            // if( in_p_->QId() >= last_id ) break;
             EmptyOut( 0 );
             if( paired_ ) EmptyOut( 1 );
+            // if( in_p_->QId() >= last_id ) break;
         }
     }
 }
@@ -603,6 +605,7 @@ void COutSAM::FinalizeBatch() {
 //------------------------------------------------------------------------------
 COutSAM::~COutSAM()
 {
+    /*
     if( !skip_unmapped_ ) {
         while( !in_p_->Done() ) {
             if( !in_p_->Skip( in_p_->QId() + 1 ) ) break;
@@ -610,6 +613,7 @@ COutSAM::~COutSAM()
             if( paired_ ) EmptyOut( 1 );
         }
     }
+    */
 }
 
 END_NS( srprism )

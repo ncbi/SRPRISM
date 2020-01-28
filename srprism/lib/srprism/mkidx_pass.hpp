@@ -90,7 +90,6 @@ class CMkIdxPass : public CIndexBase
                       start_entry_( 0 ), end_entry_( 0 ), 
                       last_nmer_( entries_[n_entries_ - 1].prefix )
                 { 
-                    assert( n_entries_ > 0 );
                     Next(); 
                 }
 

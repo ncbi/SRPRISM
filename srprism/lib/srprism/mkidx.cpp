@@ -220,6 +220,15 @@ void CMkIdx::MkSeqStore( void )
 
         while( !seq_in->Done() ) {
             if( !seq_in->Next() ) break;
+
+            if( seq_in->Data( 0 ).size < 16 )
+            {
+                M_TRACE( CTracer::WARNING_LVL,
+                         "length of subject " << seq_in->Id() <<
+                         " is too short (" << seq_in->Data( 0 ).size <<
+                         "; skipping" );
+            }
+
             seqstore.Append( seq_in->Id(), seq_in->Data( 0 ) );
         }
     }
