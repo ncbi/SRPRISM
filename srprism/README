@@ -319,7 +319,7 @@ III. DESCRIPTION
 
             value type:      integer
             possible values: 0 - 15
-            default:         0
+            default:         5
             
             Search for alignments with at most this many errors.
 
@@ -567,19 +567,27 @@ III. DESCRIPTION
         sa-start
 
             value type:      integer
-            possible values: > 0
+            possible values: != 0
             default:         1
 
             Index of the first position of the seeding area.
+            Negative value indicates offset from the end of the
+            sequence.
+            sa_start and sa_end must be of the same sign and
+                abs(sa_start) should be < abs(sa_end)
 
         --------------------------------------------------------------
         sa-end
 
             value type:      integer
-            possible values: > 0
+            possible values: != 0
             default:         8096
 
             Index of the last position of the seeding area.
+            Negative value indicates offset from the end of the
+            sequence.
+            sa_start and sa_end must be of the same sign and
+                abs(sa_start) should be < abs(sa_end)
 
         --------------------------------------------------------------
         sam-header
