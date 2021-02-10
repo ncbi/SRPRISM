@@ -1,4 +1,4 @@
-/*  $Id: srprismdef.hpp 590234 2019-07-25 16:28:25Z morgulis $
+/*  $Id: srprismdef.hpp 625236 2021-02-10 15:31:21Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -55,8 +55,8 @@ START_NS( srprism )
 // ALGORITHM VERSION INFORMATION
 //
 static const int VERSION_MAJOR = 3;
-static const int VERSION_MINOR = 1;
-static const int VERSION_POINT = 3;
+static const int VERSION_MINOR = 2;
+static const int VERSION_POINT = 1;
 static const int VERSION_STATE = 0;
 
 inline std::string GetVersionString( void )
