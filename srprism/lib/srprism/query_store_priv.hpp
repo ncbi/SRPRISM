@@ -262,8 +262,9 @@ void CQueryStore::InitialRead(
                 typedef CSeqInput::TData TSrcData;
                 const TSrcData & data( in.Data( j ) );
                 bool ignore = false;
+                TSeqSize data_size( data.size );
                 
-                if( data.size > MAX_QUERY_LEN ) {
+                if( data_size > MAX_QUERY_LEN ) {
                     if( !truncate_warning ) {
                         M_TRACE( common::CTracer::WARNING_LVL, 
                                  "sequences longer than " << MAX_QUERY_LEN << 
@@ -272,9 +273,10 @@ void CQueryStore::InitialRead(
                     }
 
                     ++truncated;
+                    data_size = MAX_QUERY_LEN;
                 }
 
-                if( data.size < HASH_LEN ) {
+                if( data_size < HASH_LEN ) {
                     if( !short_warning ) {
                         M_TRACE( common::CTracer::WARNING_LVL,
                                  "sequences shorter than " << HASH_LEN << 
@@ -304,13 +306,12 @@ void CQueryStore::InitialRead(
                 {
                     int max_n_hashes, max_seed_n_err;
                     ComputeQuerySpaceParams( 
-                            // std::min( data.size, sa_end_ - sa_start_ ), 
-                            std::min( data.size, sa_end_ ) - sa_start_,
+                            std::min( data_size, sa_end_ ) - sa_start_,
                             n_err_, max_n_hashes, max_seed_n_err );
                     TWord * raw_data( 0 );
 
-                    if( data.size > 0 ) {
-                        size_t n_words( 3 + ((data.size - 1)/WLETTERS));
+                    if( data_size > 0 ) {
+                        size_t n_words( 3 + ((data_size - 1)/WLETTERS));
                         n_words <<= 1;
                         qraw_start -= n_words;
                         raw_data = qraw_start;
@@ -318,10 +319,10 @@ void CQueryStore::InitialRead(
                         TSrcData::TSeq rvsec;
 
                         if( qrv_ ) {
-                            for( size_t j( 0 ); j < data.size; ++j ) {
+                            for( size_t j( 0 ); j < data_size; ++j ) {
                                 rvsec.push_back( 
                                         SCodingTraits< TSrcData::CODING >::
-                                            RC[data.seq[data.size - j - 1]] );
+                                            RC[data.seq[data_size - j - 1]] );
                             }
                         }
 
@@ -329,7 +330,7 @@ void CQueryStore::InitialRead(
 
                         std::fill( raw_data, raw_data + n_words, 0 );
                         Recode< SEQDATA_CODING, TSrcData::CODING >(
-                                raw_data + 2, &s[0], data.size );
+                                raw_data + 2, &s[0], data_size );
 
                         {
                             TWord * ambig_data( raw_data + (n_words>>1) );
@@ -337,7 +338,7 @@ void CQueryStore::InitialRead(
                                     ambig_data, ambig_data + (n_words>>1), 
                                     0xFFFFFFFF );
 
-                            for( size_t j( 0 ); j < data.size; ++j ) {
+                            for( size_t j( 0 ); j < data_size; ++j ) {
                                 if( SCodingTraits< TSrcData::CODING >::
                                         NAMBIG[s[j]] ) {
                                     SetStreamLetter< SEQDATA_CODING >(
@@ -352,12 +353,12 @@ void CQueryStore::InitialRead(
 
                         free_space -= n_words*sizeof( TWord );
     
-                        if( data.size > max_query_len_ ) {
-                            max_query_len_ = data.size;
+                        if( data_size > max_query_len_ ) {
+                            max_query_len_ = data_size;
                         }
                     }
 
-                    *qdata_end = CQueryData( size_++, data.size, raw_data );
+                    *qdata_end = CQueryData( size_++, data_size, raw_data );
                     qdata_end->SetAmbig( n_ambig > 0 );
 
                     if( !ignore ) {

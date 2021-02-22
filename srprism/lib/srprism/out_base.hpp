@@ -92,7 +92,12 @@ class COutBase
                     : in_( in ) {}
 
                 virtual std::string Qual( size_t idx ) const 
-                { return in_->Qual( idx ); }
+                {
+                    std::string result( in_->Qual( idx ) );
+                    return result.size() > MAX_QUERY_LEN
+                            ? result.substr( 0, MAX_QUERY_LEN )
+                            : result;
+                }
 
                 virtual bool Skip( TQueryOrdId qn )
                 { 
@@ -115,7 +120,9 @@ class COutBase
                     std::copy( 
                             seq.begin(), seq.end(), 
                             std::back_inserter( result ) );
-                    return result;
+                    return result.size() > MAX_QUERY_LEN
+                            ? result.substr( 0, MAX_QUERY_LEN )
+                            : result;
                 }
 
                 virtual bool Done( void ) const { return in_->Done(); }
