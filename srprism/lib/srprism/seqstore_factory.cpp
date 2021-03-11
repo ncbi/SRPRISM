@@ -50,13 +50,14 @@ CSeqStoreFactory::CSeqStoreFactory(
         size_t al_extend )
     : mem_mgr_( max_mem ), base_name_( base_name ), 
       alt_loc_spec_name_( alt_loc_spec_name ),
-      ss_outs_( 0 ), curr_pos_( 0 ),
+      ss_outs_( 0 ), mss_outs_( 0 ), curr_pos_( 0 ),
       ambig_map_size_( 0 ), ambig_data_size_( 0 ),
       segment_letters_( segment_letters ),
       min_seq_len_( common::SIntTraits< size_t >::MAX ),
       al_extend_( (TSeqSize)al_extend )
 { 
     ss_outs_.reset( new CWriteBinFile( base_name + SEQ_DATA_SFX) );
+    mss_outs_.reset( new CWriteBinFile( base_name + MASK_DATA_SFX) );
     seqmap_outs_.reset( new CWriteBinFile( base_name + POS_MAP_SFX ) );
     ambig_map_outs_.reset( new CWriteBinFile( base_name + AMBIG_MAP_SFX ) );
     ambig_data_outs_.reset( new CWriteBinFile( base_name + AMBIG_DATA_SFX ) );
@@ -391,8 +392,10 @@ void CSeqStoreFactory::SaveSeqData( TDBOrdId oid )
     size_t dsz( 
             1 + (n_segs*segment_letters_)/SCodingTraits< 
                 SEQDATA_CODING >::PACK_FACTOR );
-    TWord * d( (TWord *)mem_mgr_.Allocate( dsz ) );
+    TWord * d( (TWord *)mem_mgr_.Allocate( dsz ) ),
+          * md( (TWord *)mem_mgr_.Allocate( dsz ) );
     std::fill( (char *)d, (char*)d + dsz, 0 );
+    std::fill( (char *)md, (char*)d + dsz, 0 );
 
     // generate extended sequence data
     //
@@ -401,26 +404,44 @@ void CSeqStoreFactory::SaveSeqData( TDBOrdId oid )
 
     if( si.flip ) {
         TWord * t( new TWord[pfx_len/WORD_LETTERS + 1] );
+        TWord * mt( new TWord[pfx_len/WORD_LETTERS + 1] );
         ReverseComplement< SEQDATA_CODING >( 
                 t, seq_data_[pfx_id], pfx_start_pos, pfx_len );
+        Reverse< SEQDATA_CODING >( 
+                mt, mask_data_[pfx_id], pfx_start_pos, pfx_len );
         StoreSeqSeg( t, 0, pfx_len, d, 0 );
+        StoreSeqSeg( mt, 0, pfx_len, md, 0 );
         delete[] t;
+        delete[] mt;
     }
-    else StoreSeqSeg( seq_data_[pfx_id], pfx_start_pos, pfx_len, d, 0 );
+    else
+    {
+        StoreSeqSeg( seq_data_[pfx_id], pfx_start_pos, pfx_len, d, 0 );
+        StoreSeqSeg( mask_data_[pfx_id], pfx_start_pos, pfx_len, md, 0 );
+    }
 
     StoreSeqSeg( seq_data_[si.oid], si.alt_loc_start, body_len, d, pfx_len );
+    StoreSeqSeg( mask_data_[si.oid], si.alt_loc_start, body_len, md, pfx_len );
 
     if( si.flip ) {
         TWord * t( new TWord[sfx_len/WORD_LETTERS + 1] );
+        TWord * mt( new TWord[sfx_len/WORD_LETTERS + 1] );
         ReverseComplement< SEQDATA_CODING >(
                 t, seq_data_[sfx_id], sfx_start_pos, sfx_len );
+        Reverse< SEQDATA_CODING >(
+                mt, mask_data_[sfx_id], sfx_start_pos, sfx_len );
         StoreSeqSeg( t, 0, sfx_len, d, pfx_len + body_len );
+        StoreSeqSeg( mt, 0, sfx_len, md, pfx_len + body_len );
         delete[] t;
+        delete[] mt;
     }
     else {
         StoreSeqSeg( 
                 seq_data_[sfx_id], sfx_start_pos, sfx_len, 
                 d, pfx_len + body_len );
+        StoreSeqSeg( 
+                mask_data_[sfx_id], sfx_start_pos, sfx_len, 
+                md, pfx_len + body_len );
     }
 
     // create ambiguity information
@@ -510,6 +531,9 @@ void CSeqStoreFactory::SaveSeqData( TDBOrdId oid )
     ss_outs_->Write( 
             (const char *)d, 
             n_segs*SegmentWords( segment_letters_ )*sizeof( TWord ) );
+    mss_outs_->Write( 
+            (const char *)md, 
+            n_segs*SegmentWords( segment_letters_ )*sizeof( TWord ) );
 
     if( DATA_SIZE_LIMIT <= (size_t)curr_pos_ + n_segs*segment_letters_ ) {
         M_THROW( CException, MEMORY, 
@@ -521,6 +545,7 @@ void CSeqStoreFactory::SaveSeqData( TDBOrdId oid )
     ambig_map_size_ += amap.size();
     ambig_data_size_ += adata.size();
     mem_mgr_.Free( d );
+    mem_mgr_.Free( md );
 }
 
 //------------------------------------------------------------------------------

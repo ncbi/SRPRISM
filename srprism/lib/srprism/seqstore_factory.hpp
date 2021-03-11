@@ -208,8 +208,10 @@ class CSeqStoreFactory : public CSeqStoreBase
         TAmbigMap ambig_map_;
         TAmbigData ambig_data_;
         TAmbigMask ambig_mask_;
-        TSeqData seq_data_;
+        TSeqData seq_data_,
+                 mask_data_;
         std::auto_ptr< common::CWriteBinFile > ss_outs_;
+        std::auto_ptr< common::CWriteBinFile > mss_outs_;
         std::auto_ptr< common::CWriteTextFile > idmap_outs_;
         std::auto_ptr< common::CWriteBinFile > seqmap_outs_;
         std::auto_ptr< common::CWriteBinFile > ambig_map_outs_;

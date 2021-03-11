@@ -52,6 +52,7 @@ const char * CSeqStoreBase::DESC_SFX       = ".ssd";
 const char * CSeqStoreBase::ID_MAP_SFX     = ".imp";
 const char * CSeqStoreBase::POS_MAP_SFX    = ".pmp";
 const char * CSeqStoreBase::SEQ_DATA_SFX   = ".ss";
+const char * CSeqStoreBase::MASK_DATA_SFX  = ".mss";
 const char * CSeqStoreBase::AMBIG_MAP_SFX  = ".amp";
 const char * CSeqStoreBase::AMBIG_DATA_SFX = ".ssa";
 

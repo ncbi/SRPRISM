@@ -113,6 +113,7 @@ class CSeqStoreBase
         static const char * ID_MAP_SFX;
         static const char * POS_MAP_SFX;
         static const char * SEQ_DATA_SFX;
+        static const char * MASK_DATA_SFX;
         static const char * AMBIG_MAP_SFX;
         static const char * AMBIG_DATA_SFX;
 };

@@ -59,13 +59,17 @@ void CSeqStoreFactory::Append( const std::string & id, const data_t & seq_data )
 
     {
         size_t dsz( (seq_data.size + WORD_LETTERS)/TSeqTraits::PACK_FACTOR );
-        char * d( (char *)mem_mgr_.Allocate( dsz ) );
+        char * d( (char *)mem_mgr_.Allocate( dsz ) ),
+             * dm( (char *)mem_mgr_.Allocate( dsz ) );
         std::fill( d, d + dsz, 0 );
+        std::fill( dm, dm + dsz, 0 );
         seq_data_.push_back( (TWord *)d );
+        mask_data_.push_back( (TWord *)dm );
     }
 
     for( TSeqSize k( 0 ); k < seq_data.size; k += WORD_LETTERS ) {
-        TWord word( 0 );
+        TWord word( 0 ),
+              mword( 0 );
 
         for( TSeqSize j( 0 ); j < WORD_LETTERS && j + k < seq_data.size; ++j ) {
             TLetter input_letter( seq_data.seq[k + j] );
@@ -86,12 +90,14 @@ void CSeqStoreFactory::Append( const std::string & id, const data_t & seq_data )
                 
                 ambig_data_.push_back( input_letter );
                 SetLetter< SEQDATA_CODING >( word, j, ambig_subst );
+                SetLetter< SEQDATA_CODING >( mword, j, 3 );
                 ambig_subst = ((ambig_subst + 1)&LETTER_MASK);
                 ++ambig_map_.rbegin()->len;
             }
         }
 
         (*seq_data_.rbegin())[k/WORD_LETTERS] = word;
+        (*mask_data_.rbegin())[k/WORD_LETTERS] = mword;
     }
 }
 
