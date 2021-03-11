@@ -167,6 +167,8 @@ class CSeqStore : public CSeqStoreBase
         TLetter * ambig_data_;
         TWord * seq_data_;
         TWord * rev_seq_data_;
+        TWord * mask_data_;
+        TWord * rev_mask_data_;
         size_t segment_letters_;
 
         common::Uint4 max_seq_overlap_;

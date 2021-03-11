@@ -227,6 +227,7 @@ void CSeqStore::LoadDynamicData( void )
 
     size_t n_words( data_sz_/WORD_LETTERS );
 
+    //--------------------------------------------------------------------------
     try { 
         seq_data_ = 
             (TWord *)mem_mgr_.Allocate( (n_words + 3)*sizeof( TWord ) );
@@ -252,6 +253,37 @@ void CSeqStore::LoadDynamicData( void )
         throw;
     }
 
+    //--------------------------------------------------------------------------
+    try { 
+        mask_data_ = 
+            (TWord *)mem_mgr_.Allocate( (n_words + 3)*sizeof( TWord ) );
+        mask_data_[n_words + 1] = mask_data_[n_words + 2] = ~(TWord)0;
+        *mask_data_++ = ~(TWord)0;
+    }
+    catch( ... ) {
+        mem_mgr_.Free( seq_data_ - 1 );
+        seq_data_ = 0;
+        mem_mgr_.Free( (void *)ambig_map_ );
+        ambig_map_ = 0;
+        throw;
+    }
+
+    try {
+        CReadBinFile ins( basename_ + MASK_DATA_SFX );
+        ins.Read( (char *)mask_data_, n_words*sizeof( TWord ), true );
+        M_TRACE( CTracer::INFO_LVL, "subject mask data loaded" );
+    }
+    catch( ... ) {
+        mem_mgr_.Free( mask_data_ - 1 );
+        mask_data_ = 0;
+        mem_mgr_.Free( seq_data_ - 1 );
+        seq_data_ = 0;
+        mem_mgr_.Free( ambig_map_ );
+        ambig_map_ = 0;
+        throw;
+    }
+
+    //--------------------------------------------------------------------------
     try{ 
         rev_seq_data_ = 
             (TWord *)mem_mgr_.Allocate( (n_words + 3)*sizeof( TWord ) ); 
@@ -266,6 +298,34 @@ void CSeqStore::LoadDynamicData( void )
         M_TRACE( CTracer::INFO_LVL, "reverse sequence data generated" );
     }
     catch( ... ) {
+        mem_mgr_.Free( mask_data_ - 1 );
+        mask_data_ = 0;
+        mem_mgr_.Free( seq_data_ - 1 );
+        seq_data_ = 0;
+        mem_mgr_.Free( ambig_map_ );
+        ambig_map_ = 0;
+        throw;
+    }
+
+    //--------------------------------------------------------------------------
+    try{ 
+        rev_mask_data_ = 
+            (TWord *)mem_mgr_.Allocate( (n_words + 3)*sizeof( TWord ) ); 
+        rev_mask_data_[n_words + 1] = rev_mask_data_[n_words + 2] = ~(TWord)0;
+        *rev_mask_data_++ = ~(TWord)0;
+        
+        for( size_t i( 0 ); i < n_words; ++i ) {
+            Reverse< SEQDATA_CODING >( 
+                    rev_mask_data_[n_words - i - 1], mask_data_[i] );
+        }
+
+        M_TRACE( CTracer::INFO_LVL, "reverse mask data generated" );
+    }
+    catch( ... ) {
+        mem_mgr_.Free( rev_seq_data_ - 1 );
+        rev_seq_data_ = 0;
+        mem_mgr_.Free( mask_data_ - 1 );
+        mask_data_ = 0;
         mem_mgr_.Free( seq_data_ - 1 );
         seq_data_ = 0;
         mem_mgr_.Free( ambig_map_ );
@@ -320,10 +380,13 @@ void CSeqStore::Load(void)
 void CSeqStore::Unload( void )
 {
     if( seq_data_ != 0 ) {
+        mem_mgr_.Free( (void *)(rev_mask_data_ - 1));
         mem_mgr_.Free( (void *)(rev_seq_data_ - 1));
+        mem_mgr_.Free( (void *)(mask_data_ - 1));
         mem_mgr_.Free( (void *)(seq_data_ - 1));
         mem_mgr_.Free( (void *)ambig_map_ );
-        rev_seq_data_ = seq_data_ = 0; ambig_map_ = 0;
+        rev_mask_data_ = rev_seq_data_ = mask_data_ = seq_data_ = 0;
+        ambig_map_ = 0;
     }
 }
 
