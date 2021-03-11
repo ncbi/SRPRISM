@@ -56,7 +56,7 @@ START_NS( srprism )
 //
 static const int VERSION_MAJOR = 3;
 static const int VERSION_MINOR = 2;
-static const int VERSION_POINT = 2;
+static const int VERSION_POINT = 3;
 static const int VERSION_STATE = 0;
 
 inline std::string GetVersionString( void )

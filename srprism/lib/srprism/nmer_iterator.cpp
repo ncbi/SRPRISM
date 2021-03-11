@@ -49,7 +49,8 @@ bool CNMerIterator::NextLetter( void )
     curr_prefix_ = GetWord< SEQDATA_CODING >( fw_ptr_, fw_off_ );
     ReverseComplement< SEQDATA_CODING >( reverse_prefix_, curr_prefix_ );
     // len_ = (ss_.NAmbigs( curr_pos_, curr_pos_ + HASH_LEN ) > 0 ) ? 0 : HASH_LEN;
-    len_ = HASH_LEN;
+    // len_ = HASH_LEN;
+    len_ = (ss_.NAmbigs( curr_pos_, curr_pos_ + HASH_LEN ) > 15 ) ? 0 : HASH_LEN;
     ++curr_pos_; --left_; ++fw_off_; fw_ptr_ += (fw_off_>>OFFSET_SHIFT);
     fw_off_ &= OFFSET_MASK;
     return true;
