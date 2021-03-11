@@ -211,6 +211,15 @@ class CSeqStore : public CSeqStoreBase
                     rev_seq_data_ + (pos>>WORD_SHIFT), (pos&WORD_MASK) );
         }
 
+        TWord const * FwMaskPtr( TPos pos ) const
+        { return mask_data_ + (pos>>WORD_SHIFT); }
+
+        TWord const * RvMaskPtr( TPos pos  ) const
+        { 
+            pos = data_sz_ - pos;
+            return rev_mask_data_ + (pos>>WORD_SHIFT);
+        }
+
         TDBOrdId GetRefOId( TDBOrdId oid ) const
         {
             SRPRISM_ASSERT( oid < seq_map_.size() );
