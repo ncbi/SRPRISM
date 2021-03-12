@@ -503,7 +503,8 @@ class CHit
             }
 
             template< int dir, bool partial_align > void ExtendNonExact(
-                const TWord * q, const TWord * m, const TWord * s,
+                const TWord * q, const TWord * m,
+                const TWord * s, const TWord * sm,
                 TSeqSize qwoff, TSeqSize swoff,
                 TSeqSize q_min, TSeqSize q_max, TSeqSize q_lim, TSeqSize s_lim, 
                 common::Uint1 n_err, common::Uint1 n_id,
@@ -525,14 +526,18 @@ class CHit
         static inline TWord CutWord( TDWord dword, const TSeqSize & offset );
 
         static inline void ExtendLeftExact(
-                const TWord * q, const TWord * qm, const TWord * s,
+                const TWord * q, const TWord * qm,
+                const TWord * s, const TWord * sm,
                 TSeqSize qwoff, TSeqSize swoff, common::Sint4 s_lim, 
-                TDWord dq, TDWord dm, TDWord ds, TSeqSize & n_matched );
+                TDWord dq, TDWord dm, TDWord ds, TDWord dsm,
+                TSeqSize & n_matched );
 
         static inline void ExtendRightExact(
-                const TWord * q, const TWord * qm, const TWord * s,
+                const TWord * q, const TWord * qm,
+                const TWord * s, const TWord * sm,
                 TSeqSize qwoff, TSeqSize swoff, common::Sint4 s_lim, 
-                TDWord dq, TDWord dm, TDWord ds, TSeqSize & n_matched );
+                TDWord dq, TDWord dm, TDWord ds, TDWord dsm,
+                TSeqSize & n_matched );
 
     public:
 

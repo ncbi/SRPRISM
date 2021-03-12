@@ -50,28 +50,30 @@ inline TWord CHit::CutWord( TDWord d, const TSeqSize & o )
 
 //------------------------------------------------------------------------------
 inline void CHit::ExtendLeftExact( 
-        const TWord * q, const TWord * qm, const TWord * s, 
+        const TWord * q, const TWord * qm, const TWord * s, const TWord * sm,
         TSeqSize qwoff, TSeqSize swoff, common::Sint4 s_lim, 
-        TDWord dq, TDWord dm, TDWord ds, TSeqSize & n_matched )
+        TDWord dq, TDWord dm, TDWord ds, TDWord dsm, TSeqSize & n_matched )
 {
     if( s_lim > 0 ) {
-        TWord qw, mw, sw;
+        TWord qw, mw, sw, smw;
         TSeqSize l( WLETTERS );
 
         do {
             qw = CutWord( dq, qwoff );
             mw = CutWord( dm, qwoff );
             sw = CutWord( ds, swoff );
-            qw ^= sw; qw |= mw;
+            smw = CutWord( dsm, swoff );
+            qw ^= sw; qw |= mw; qw |= smw;
             l = (common::FirstSetBit_Right( qw )>>LSHIFT);
             n_matched += l;
             s_lim -= l;
             if( s_lim <= 0 || l != WLETTERS ) break;
-            --q; --qm; --s;
-            dq >>= WBITS; dm >>= WBITS; ds >>= WBITS;
+            --q; --qm; --s; --sm;
+            dq >>= WBITS; dm >>= WBITS; ds >>= WBITS; dsm >>= WBITS;
             dq += (((TDWord)(*q))<<WBITS);
             dm += (((TDWord)(*qm))<<WBITS);
             ds += (((TDWord)(*s))<<WBITS);
+            dsm += (((TDWord)(*sm))<<WBITS);
         }
         while( true );
 
@@ -81,27 +83,28 @@ inline void CHit::ExtendLeftExact(
 
 //------------------------------------------------------------------------------
 inline void CHit::ExtendRightExact( 
-        const TWord * q, const TWord * qm, const TWord * s, 
+        const TWord * q, const TWord * qm, const TWord * s, const TWord * sm,
         TSeqSize qwoff, TSeqSize swoff, common::Sint4 s_lim, 
-        TDWord dq, TDWord dm, TDWord ds, TSeqSize & n_matched )
+        TDWord dq, TDWord dm, TDWord ds, TDWord dsm, TSeqSize & n_matched )
 {
     if( s_lim > 0 ) {
-        TWord qw, mw, sw;
+        TWord qw, mw, sw, smw;
         TSeqSize l( WLETTERS );
-        ++q; ++qm; ++s;
+        ++q; ++qm; ++s; ++sm;
 
         do {
             qw = CutWord( dq, qwoff );
             mw = CutWord( dm, qwoff );
             sw = CutWord( ds, swoff );
-            qw ^= sw; qw |= mw;
+            smw = CutWord( dsm, swoff );
+            qw ^= sw; qw |= mw; qw |= smw;
             l = (common::FirstSetBit_Left( qw )>>LSHIFT);
             n_matched += l;
             s_lim -= l;
             if( s_lim <= 0 || l != WLETTERS ) break;
-            ++q; ++qm; ++s;
-            dq <<= WBITS; dm <<= WBITS; ds <<= WBITS;
-            dq += *q; dm += *qm; ds += *s;
+            ++q; ++qm; ++s; ++sm;
+            dq <<= WBITS; dm <<= WBITS; ds <<= WBITS; dsm <<= WBITS;
+            dq += *q; dm += *qm; ds += *s; dsm += *sm;
         }
         while( true );
 
@@ -137,10 +140,13 @@ inline void CHit::ExtendRightExact(
 template<> struct CHit::SExtendDirTraits< -1 >
 {
     static void ExtendExact(
-        const TWord * q, const TWord * qm, const TWord * s, 
+        const TWord * q, const TWord * qm, const TWord * s, const TWord * sm,
         TSeqSize qwoff, TSeqSize swoff, common::Sint4 s_lim, 
-        TDWord dq, TDWord dm, TDWord ds, TSeqSize & n_matched )
-    { ExtendLeftExact( q, qm, s, qwoff, swoff, s_lim, dq, dm, ds, n_matched ); }
+        TDWord dq, TDWord dm, TDWord ds, TDWord dsm, TSeqSize & n_matched )
+    {
+        ExtendLeftExact( q, qm, s, sm, qwoff, swoff, s_lim,
+                         dq, dm, ds, dsm, n_matched );
+    }
 
     static void AdjustDataPtr( 
             TSeqSize off_ini, Uint2 off_curr, 
@@ -155,10 +161,13 @@ template<> struct CHit::SExtendDirTraits< -1 >
 template<> struct CHit::SExtendDirTraits< 1 >
 {
     static void ExtendExact(
-        const TWord * q, const TWord * qm, const TWord * s, 
+        const TWord * q, const TWord * qm, const TWord * s, const TWord * sm,
         TSeqSize qwoff, TSeqSize swoff, common::Sint4 s_lim, 
-        TDWord dq, TDWord dm, TDWord ds, TSeqSize & n_matched )
-    { ExtendRightExact( q, qm, s, qwoff, swoff, s_lim, dq, dm, ds, n_matched ); }
+        TDWord dq, TDWord dm, TDWord ds, TDWord dsm, TSeqSize & n_matched )
+    {
+        ExtendRightExact( q, qm, s, sm, qwoff, swoff, s_lim,
+                          dq, dm, ds, dsm, n_matched );
+    }
 
     static void AdjustDataPtr( 
             TSeqSize off_ini, Uint2 off_curr, 
@@ -255,7 +264,7 @@ inline void CHit::STraceBack::TrimAndUpdate(
 //------------------------------------------------------------------------------
 template< int dir, bool partial_align >
 inline void CHit::STraceBack::ExtendNonExact(
-        const TWord * q, const TWord * m, const TWord * s, 
+        const TWord * q, const TWord * m, const TWord * s, const TWord * sm,
         TSeqSize qwoff, TSeqSize swoff, 
         TSeqSize q_min, TSeqSize q_max, TSeqSize q_lim, TSeqSize s_lim, 
         common::Uint1 n_err, common::Uint1 n_id, 
@@ -326,10 +335,12 @@ inline void CHit::STraceBack::ExtendNonExact(
     TSeqSize qo, so;
     SExtendDirTraits< dir >::AdjustDataPtr( qwoff, 0, qadj_p, qo );
     SExtendDirTraits< dir >::AdjustDataPtr( swoff, 0, sadj_p, so );
-    TDWord dq( *(q + qadj_p) ), dm( *(m + qadj_p) ), ds( *(s + sadj_p) );
+    TDWord dq( *(q + qadj_p) ), dm( *(m + qadj_p) ),
+           ds( *(s + sadj_p) ), dsm( *(sm + sadj_p) );
     dq = (dq<<WBITS) + *(q + qadj_p + 1);
     dm = (dm<<WBITS) + *(m + qadj_p + 1);
     ds = (ds<<WBITS) + *(s + sadj_p + 1);
+    dsm = (dsm<<WBITS) + *(sm + sadj_p + 1);
 
     // main loop
     //
@@ -364,13 +375,14 @@ inline void CHit::STraceBack::ExtendNonExact(
         }
 
         if( sadj != sadj_p ) {
-            ds = *(s + sadj); ds = (ds<<WBITS) + *(s + sadj + 1);
+            ds  = *(s + sadj);  ds  = (ds<<WBITS)  + *(s + sadj + 1);
+            dsm = *(sm + sadj); dsm = (dsm<<WBITS) + *(sm + sadj + 1);
             sadj_p = sadj;
         }
 
         SExtendDirTraits< dir >::ExtendExact( 
-                q + qadj, m + qadj, s + sadj, qo, so, 
-                (Sint4)(s_lim - j - 1), dq, dm, ds, range );
+                q + qadj, m + qadj, s + sadj, sm + sadj, qo, so, 
+                (Sint4)(s_lim - j - 1), dq, dm, ds, dsm, range );
 
         if( i + range + 1 >= q_lim ) {
             if( partial_align ) {
@@ -428,7 +440,7 @@ bool CHit::Extend(
              s_rv_lim( ss.RvTailLen( seed_soff ) ),
              q_fw_lim( qdata_.Len() - seed_qoff - seed_qlen ),
              q_rv_lim( seed_qoff );
-    const TWord * q( qdata_.Data() ), * m( qdata_.Mask() ), * s;
+    const TWord * q( qdata_.Data() ), * m( qdata_.Mask() ), * s, * sm;
     TSeqSize qo_l( seed_qoff ), qo_r( seed_qoff + seed_qlen ),
              so_l, so_r;
     int dir;
@@ -438,6 +450,7 @@ bool CHit::Extend(
     if( strand_ == STRAND_FW ) {
         std::pair< const TWord *, TSeqSize > sd( ss.FwDataPtr( seed_soff ) );
         s = sd.first; so_l = sd.second; so_r = sd.second + seed_slen;
+        sm = ss.FwMaskPtr( seed_soff );
         dir = -1;
     }
     else {
@@ -445,6 +458,7 @@ bool CHit::Extend(
         seed_soff += seed_slen;
         std::pair< const TWord *, TSeqSize > sd( ss.RvDataPtr( seed_soff ) );
         s = sd.first; so_l = sd.second; so_r = sd.second + seed_slen;
+        sm = ss.RvMaskPtr( seed_soff );
         dir = 1;
     }
 
@@ -454,6 +468,7 @@ bool CHit::Extend(
         TSeqSize l( std::min( s_rv_lim, q_rv_lim + n_err ) );
         l = (l>>WSHIFT) + 1;
         s -= l;
+        sm -= l;
         l <<= WSHIFT;
         so_l += l; so_r += l;
     }
@@ -467,15 +482,19 @@ bool CHit::Extend(
 
     if( qo_l > 0 ) {
         Uint2 qa( (qo_l)>>WSHIFT ), sa( (so_l)>>WSHIFT );
-        const TWord * qq( q + qa ), * mm( m + qa ), * ss( s + sa );
-        TDWord dq( *(qq - 1) ), dm( *(mm - 1) ), ds( *(ss - 1) );
+        const TWord * qq( q + qa ), * mm( m + qa ),
+                    * ss( s + sa ), * ssm( sm + sa );
+        TDWord dq( *(qq - 1) ), dm( *(mm - 1) ),
+               ds( *(ss - 1) ), dsm( *(ssm - 1) );
         dq = (dq<<WBITS) + *qq;
         dm = (dm<<WBITS) + *mm;
         ds = (ds<<WBITS) + *ss;
+        dsm = (dsm<<WBITS) + *ssm;
         TSeqSize exact_extension_left( 0 );
         ExtendLeftExact(
-                qq - 1, mm - 1, ss - 1, (qo_l&WMASK), (so_l&WMASK), s_rv_lim,
-                dq, dm, ds, exact_extension_left );
+                qq - 1, mm - 1, ss - 1, ssm - 1,
+                (qo_l&WMASK), (so_l&WMASK), s_rv_lim,
+                dq, dm, ds, dsm, exact_extension_left );
 
         if( !partial_align && exact_extension_left < seed_qoff && n_err == 0 ) {
             return false;
@@ -502,15 +521,17 @@ bool CHit::Extend(
 
     if( q_fw_lim > 0 ) {
         Uint2 qa( qo_r>>WSHIFT ), sa( so_r>>WSHIFT );
-        const TWord * qq( q + qa ), * mm( m + qa ), * ss( s + sa );
-        TDWord dq( *qq ), dm( *mm ), ds( *ss );
+        const TWord * qq( q + qa ), * mm( m + qa ),
+                    * ss( s + sa ), * ssm( sm + sa );
+        TDWord dq( *qq ), dm( *mm ), ds( *ss ), dsm( *ssm );
         dq = (dq<<WBITS) + *(qq + 1);
         dm = (dm<<WBITS) + *(mm + 1);
         ds = (ds<<WBITS) + *(ss + 1);
+        dsm = (dsm<<WBITS) + *(ssm + 1);
         TSeqSize exact_extension_right( 0 );
         ExtendRightExact(
-                qq, mm, ss, (qo_r&WMASK), (so_r&WMASK), s_fw_lim,
-                dq, dm, ds, exact_extension_right );
+                qq, mm, ss, ssm, (qo_r&WMASK), (so_r&WMASK), s_fw_lim,
+                dq, dm, ds, dsm, exact_extension_right );
 
         if( !partial_align && exact_extension_right < q_fw_lim && n_err == 0 ) {
             return false;
@@ -550,7 +571,7 @@ bool CHit::Extend(
         STraceBack tb;
         ++*ustat;
         tb.ExtendNonExact< -1, false >(
-                q - 1, m - 1, s - 1, qo_l + 1, so_l + 1,
+                q - 1, m - 1, s - 1, sm - 1, qo_l + 1, so_l + 1,
                 0, q_rv_lim + 1, left_q_lim, s_rv_lim + 1,
                 seed_n_err, seed_n_err, ma );
         if( (left_sa_n_err = tb.NErr()) > seed_n_err ) return false;
@@ -595,7 +616,7 @@ bool CHit::Extend(
         int n_err_lcl( seed_n_err - left_sa_n_err );
         ++*ustat;
         tb.ExtendNonExact< 1, false >(
-                q, m, s, qo_r - 1, so_r - 1,
+                q, m, s, sm, qo_r - 1, so_r - 1,
                 0, q_fw_lim + 1, right_q_lim, s_fw_lim + 1,
                 n_err_lcl, n_err_lcl, ma );
         if( (right_sa_n_err = tb.NErr()) > n_err_lcl ) return false;
@@ -638,7 +659,7 @@ bool CHit::Extend(
         STraceBack tb;
         ++*ustat;
         tb.ExtendNonExact< -1, partial_align >(
-                q - 1, m - 1, s - 1, qo_l + 1, so_l + 1,
+                q - 1, m - 1, s - 1, sm - 1, qo_l + 1, so_l + 1,
                 left_q_lim, q_rv_lim + 1, q_rv_lim + 1, s_rv_lim + 1,
                 n_err, n_err, ma );
 
@@ -701,7 +722,7 @@ bool CHit::Extend(
         STraceBack tb;
         ++*ustat;
         tb.ExtendNonExact< 1, partial_align >( 
-                q, m, s, qo_r - 1, so_r - 1,
+                q, m, s, sm, qo_r - 1, so_r - 1,
                 right_q_lim, q_fw_lim + 1, q_fw_lim + 1, s_fw_lim + 1,
                 n_err, n_err, ma );
         
