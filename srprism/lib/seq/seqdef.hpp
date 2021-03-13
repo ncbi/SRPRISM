@@ -191,6 +191,9 @@ struct SCodingTraits : public SCodingTraits_Base< coding >
 extern common::Uint1 
 BYTE_RC[common::SBitFieldTraits< size_t, common::BYTEBITS >::MAX + 1];
 
+extern common::Uint1 
+BYTE_R[common::SBitFieldTraits< size_t, common::BYTEBITS >::MAX + 1];
+
 /**\brief Initialization of various coding tables.
 
    This function needs to be called before any other facilities 
@@ -418,6 +421,96 @@ inline void Recode( d_iter_t di, s_iter_t si, TSeqSize len )
                 SCodingTraits< s_coding >::template Recode< d_coding >( l ) );
     }
 }
+
+//------------------------------------------------------------------------------
+template< TCoding coding > struct SReverse {};
+
+template<> struct SReverse< CODING_NCBI2NA >
+{
+    static const TCoding CODING = CODING_NCBI2NA;
+    typedef SCodingTraits< CODING > TTraits;
+
+    template< typename unit_t > void operator()( unit_t & d, unit_t s )
+    {
+        static const size_t UBITS = common::BYTEBITS*sizeof( unit_t );
+        static const size_t MASK = 
+            common::SBitFieldTraits< unit_t, common::BYTEBITS >::MASK;
+
+        for( size_t i = 0; i < UBITS; i += common::BYTEBITS ) {
+            common::Uint1 sbyte( (common::Uint1)((s>>i)&MASK) );
+            common::PushBits_Unsafe< common::BYTEBITS >( 
+                    d, (unit_t)BYTE_R[sbyte] );
+        }
+    }
+
+    template< typename unit_t >
+    void operator()( unit_t & d, unit_t s, TSeqSize len )
+    {
+        static const size_t UBYTES = sizeof( unit_t );
+        static const size_t UBITS = common::BYTEBITS*UBYTES;
+
+#ifndef NDEBUG
+        static const TSeqSize ULETTERS = sizeof( unit_t )*TTraits::PACK_FACTOR;
+#endif
+
+        static const size_t LSHIFT = 
+            common::SBinLog< TTraits::LETTER_BITS >::VALUE;
+
+#ifndef NDEBUG
+        SRPRISM_ASSERT( len <= ULETTERS );
+#endif
+
+        size_t shift( UBITS - (len<<LSHIFT) );
+        (*this)( d, s );
+        d <<= shift;
+    }
+
+    template< typename unit_t >
+    void operator()( 
+            unit_t * d, const unit_t * s, TSeqSize start, TSeqSize len )
+    {
+        static const size_t UBYTES = sizeof( unit_t );
+        static const size_t UBITS = common::BYTEBITS*UBYTES;
+        static const size_t LSHIFT = 
+            common::SBinLog< TTraits::LETTER_BITS >::VALUE;
+        static const TSeqSize ULETTERS = sizeof( unit_t )*TTraits::PACK_FACTOR;
+        static const size_t LLSHIFT = common::SBinLog< ULETTERS >::VALUE;
+        static const TSeqSize LLMASK = 
+            common::SBitFieldTraits< TSeqSize, LLSHIFT >::MASK;
+
+        TSeqSize n_units( (len + ULETTERS - 1)/ULETTERS );
+        s += (start>>LLSHIFT);
+        len += (start&LLMASK);
+        TSeqSize lenrem( len&LLMASK );
+        const unit_t * se( s + (len>>LLSHIFT) );
+
+        if( lenrem > 0 ) {
+            TSeqSize lshift( lenrem<<LSHIFT ),
+                     rshift( UBITS - lshift );
+
+            while( se > s ) {
+                unit_t su( ((*se)>>rshift) + ((*(se-1))<<lshift) );
+                operator()( *d++, su );
+                --se;
+                --n_units;
+            }
+
+            if( n_units > 0 ) operator()( *d, *se, lenrem );
+        }
+        else while( se > s ) operator()( *d++, *--se );
+    }
+};
+
+template< TCoding coding, typename unit_t >
+void Reverse( unit_t & d, unit_t s, TSeqSize len )
+{ SReverse< coding >()( d, s, len ); }
+
+template< TCoding coding, typename unit_t >
+void Reverse( unit_t & d, unit_t s ) { SReverse< coding >()( d, s ); }
+
+template< TCoding coding, typename unit_t >
+void Reverse( unit_t * d, const unit_t * s, TSeqSize start, TSeqSize len )
+{ SReverse< coding >()( d, s, start, len ); }
 
 //------------------------------------------------------------------------------
 template< TCoding coding >

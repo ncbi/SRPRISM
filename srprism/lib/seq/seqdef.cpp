@@ -46,6 +46,7 @@ USE_NS( common )
 const size_t BYTE_RC_LEN 
     = common::SBitFieldTraits< size_t, common::BYTEBITS >::MAX + 1;
 common::Uint1 BYTE_RC[BYTE_RC_LEN];
+common::Uint1 BYTE_R[BYTE_RC_LEN];
 
 TAlphabetString SCodingTraits_Base< CODING_IUPACNA >::ALPHABET_STRING;
 TAlphabetArray SCodingTraits_Base< CODING_NCBI2NA >::ALPHABET_ARRAY =
@@ -266,6 +267,7 @@ void InitCoding(void)
                 SetLetter< CODING >( 
                         BYTE_RC[i], NUM_LETTERS - j - 1, 
                         SCodingTraits< CODING >::RC[l] );
+                SetLetter< CODING >( BYTE_R[i], NUM_LETTERS - j - 1, l );
             }
         }
     }

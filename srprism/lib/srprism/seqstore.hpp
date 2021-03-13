@@ -167,6 +167,8 @@ class CSeqStore : public CSeqStoreBase
         TLetter * ambig_data_;
         TWord * seq_data_;
         TWord * rev_seq_data_;
+        TWord * mask_data_;
+        TWord * rev_mask_data_;
         size_t segment_letters_;
 
         common::Uint4 max_seq_overlap_;
@@ -207,6 +209,15 @@ class CSeqStore : public CSeqStoreBase
             pos = data_sz_ - pos;
             return std::make_pair(
                     rev_seq_data_ + (pos>>WORD_SHIFT), (pos&WORD_MASK) );
+        }
+
+        TWord const * FwMaskPtr( TPos pos ) const
+        { return mask_data_ + (pos>>WORD_SHIFT); }
+
+        TWord const * RvMaskPtr( TPos pos  ) const
+        { 
+            pos = data_sz_ - pos;
+            return rev_mask_data_ + (pos>>WORD_SHIFT);
         }
 
         TDBOrdId GetRefOId( TDBOrdId oid ) const
