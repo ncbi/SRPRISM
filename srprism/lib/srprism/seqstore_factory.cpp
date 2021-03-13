@@ -395,7 +395,7 @@ void CSeqStoreFactory::SaveSeqData( TDBOrdId oid )
     TWord * d( (TWord *)mem_mgr_.Allocate( dsz ) ),
           * md( (TWord *)mem_mgr_.Allocate( dsz ) );
     std::fill( (char *)d, (char*)d + dsz, 0 );
-    std::fill( (char *)md, (char*)d + dsz, 0 );
+    std::fill( (char *)md, (char*)md + dsz, 0 );
 
     // generate extended sequence data
     //
