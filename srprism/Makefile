@@ -19,7 +19,7 @@ NGS_PATH := $(NGS_DIR)/ngs_out
 BUILD_PATH := $(NGS_DIR)/build
 
 VDB_INCL := -I $(VDB_PATH)/include
-VDB_LIB := -L $(VDB_PATH)/lib64
+VDB_LIB := -L $(VDB_PATH)/lib64 -Xlinker -rpath=$(VDB_PATH)/lib64
 NGS_INCL := -I $(NGS_PATH)/include
 NGS_LIB := -L $(NGS_PATH)/lib64
 
