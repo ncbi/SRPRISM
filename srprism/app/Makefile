@@ -13,7 +13,8 @@ CFLAGS = -std=c++11 -DNDEBUG -O3 -Wno-deprecated-declarations
 ifdef USE_SRA
 
 #LIBS = -pthread -lncbi-ngs-c++ -lngs-c++ -lncbi-vdb-static -ldl 
-LIBS = -pthread -lncbi-ngs-c++ -lngs-c++ -lncbi-vdb -ldl 
+#LIBS = -pthread -lncbi-ngs-c++ -lngs-c++ -lncbi-vdb -ldl 
+LIBS = -pthread -lncbi-ngs-c++ -lngs-c++ -lncbi-ngs-static -lncbi-vdb-static -ldl 
 
 endif
 
