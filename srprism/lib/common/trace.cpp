@@ -51,6 +51,7 @@ const char * CTracer::Level2Str[CTracer::NUM_LEVELS] = {
 std::ostream * CTracer::Tr_Stream_ = 0;
 CTracer::TLevel CTracer::Curr_Lvl_ = CTracer::DBG_LVL;
 bool CTracer::alloc_ = false;
+std::mutex CTracer::mtx_;
 
 //------------------------------------------------------------------------------
 void CTracer::SetOutputStream( std::ostream & out ) 

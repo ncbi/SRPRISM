@@ -44,6 +44,7 @@
 
 #include <iostream>
 #include <iomanip>
+#include <mutex>
 #include <ostream>
 #include <sstream>
 #include <string>
@@ -139,6 +140,7 @@ class CTracer
                 const std::string & msg )
         { 
             if( lvl >= Curr_Lvl_ && Tr_Stream_ != 0 ) {
+                std::lock_guard< std::mutex > lock( mtx_ );
                 (*Tr_Stream_) << Level2Str[lvl] << msg
                               << " <" << file << ":" << line << ">" 
                               << std::endl;
@@ -154,10 +156,13 @@ class CTracer
         static TLevel Curr_Lvl_;
         static bool alloc_;
 
+        static std::mutex mtx_;
+
 #endif
 
 };
 
+/*
 class CProgress
 {
     public:
@@ -300,6 +305,7 @@ class CTicker
         CTracer::TLevel lvl_;
         std::string end_msg_;
 };
+*/
 
 END_NS( common )
 END_STD_SCOPES
