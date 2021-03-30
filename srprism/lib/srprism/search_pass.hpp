@@ -204,8 +204,6 @@ class CSearchPass_Base
                     qh.QNum() ) < queries_p->MinErr( qh ));
         }
 
-        static size_t pass_no_;     // absolute pass number
-
         CMemoryManager & mem_mgr_;  // memory manager
         CTmpResMgr & tmp_res_mgr_;  // temporary result storage
         CSeqStore & seqstore_;      // subject sequence data storage

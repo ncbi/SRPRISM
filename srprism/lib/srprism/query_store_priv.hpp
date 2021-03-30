@@ -232,7 +232,6 @@ void CQueryStore::InitialRead(
     free_space = ((char *)qraw_start - (char *)qdata_end );
 
     {
-        common::CTicker ticker( 100000, "reading queries" );
         int n_cols( in.NCols() );
 
         //######################################################################
@@ -373,8 +372,6 @@ void CQueryStore::InitialRead(
                     free_space -= 
                         max_n_hashes*sizeof( CQueryData ) + sizeof( TWord );
                 }
-
-                ticker.Tick();
             }
         }
     }

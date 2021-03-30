@@ -72,9 +72,6 @@ USE_NS( seq )
 template< int search_mode > 
 const char * CSearchPass_Base< search_mode >::PQDUMP_NAME = "pqdump";
 
-template< int search_mode > 
-size_t CSearchPass_Base< search_mode >::pass_no_ = 0;
-
 //------------------------------------------------------------------------------
 template< int search_mode >
 CSearchPass_Base< search_mode >::CSearchPass_Base( 
@@ -152,7 +149,6 @@ CSearchPass_ByHash< search_mode, HASH_BLOWUP, paired >::NextSubPass_Ext( void )
         std::vector< TQNum > marked_list;
 
         {
-            CTicker tick( 100000, "expanding queries" );
             CReadBinFile in( 
                     this->tmp_store_.Register( CQueryStore::QDUMP_NAME ) );
 
@@ -175,7 +171,6 @@ CSearchPass_ByHash< search_mode, HASH_BLOWUP, paired >::NextSubPass_Ext( void )
                 if( curr_idx >= start_idx_ ) {
                     size_t n_q( 0 ); // number of query data entries resulting
                                      //     from expansion of one query
-                    tick.Tick();
                     TQNum qn( q.QNum() );
                     q.SetRawData( &wbuf_[0] ); // link the query data to the raw 
                                                // sequence data
@@ -325,7 +320,6 @@ CSearchPass_ByHash< search_mode, HASH_BLOWUP, paired >::NextSubPass_Ext( void )
                expanded( 0 );       // total number of expanded queries in this
 
         {
-            CTicker tick( 100000, "expanding queries" );
             CReadBinFile in( 
                     this->tmp_store_.Register( CQueryStore::QDUMP_NAME ) );
                     
@@ -346,7 +340,6 @@ CSearchPass_ByHash< search_mode, HASH_BLOWUP, paired >::NextSubPass_Ext( void )
                 if( curr_idx >= start_idx_ ) {
                     size_t n_q( 0 ); // number of query data entries resulting
                                      //     from expansion of one query
-                    tick.Tick();
                     q.SetRawData( &wbuf_[0] );
 
                     // skip queries that should not be searched in this pass
@@ -1156,8 +1149,6 @@ template< int search_mode, int hash, bool paired >
 void CSearchPass< search_mode, hash, paired >::Run(void)
 {
     while( !this->end_pass_ ) {
-        ++TBase::pass_no_;
-        M_TRACE( CTracer::INFO_LVL, "Pass " << TBase::pass_no_ );
         this->pass_stats_.Clean();
         this->queries_.StartProcess();
         CQueryStore::CEquivIterator eq_iter( this->queries_.EquivIterator() );
@@ -1166,9 +1157,6 @@ void CSearchPass< search_mode, hash, paired >::Run(void)
             M_TRACE( CTracer::INFO_LVL, eq_iter.Total() << " primary queries" );
             this->idx_.reset( new CIndexIterator( this->idx_basename_ ) );
             std::ostringstream os;
-            os << "pass " << TBase::pass_no_ << ": searching...";
-            CProgress progress( eq_iter.Total(), os.str(), 0.1 );
-            double current = 0.0;
             bool idx_done( false );
 
             while( eq_iter.Next() ) {
@@ -1219,9 +1207,6 @@ void CSearchPass< search_mode, hash, paired >::Run(void)
                     }
                 }
                 else TBase::template SetHashDone< hash >( qstart, qend );
-
-                current += (double)eq_iter.Size();
-                progress.Current( current );
             }
         }
 
