@@ -92,6 +92,7 @@ class CSearch
                   pair_distance( 500 ),
                   pair_fuzz( 490 ),
                   max_qlen( 16 ),
+                  n_threads( 1 ),
                   sa_start( 1 ),
                   sa_end( 8192 ),
                   n_err( 0 ),
@@ -132,6 +133,7 @@ class CSearch
             common::Uint2 pair_distance;
             common::Uint2 pair_fuzz;
             common::Uint2 max_qlen;
+            common::Uint2 n_threads;
             common::Sint2 sa_start;
             common::Sint2 sa_end;
             common::Uint1 n_err;

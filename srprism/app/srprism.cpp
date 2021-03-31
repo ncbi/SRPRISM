@@ -403,6 +403,14 @@ static const std::string SEARCH_SAM_HEADER_DESCR    = "\
 \tPrint the standard SAM header.\n\
 ";
 
+static const std::string SEARCH_THREADS_KEY      = "threads";
+static const std::string SEARCH_THREADS_SKEY     = "";
+static const std::string SEARCH_THREADS_LABEL    = "integer";
+static const std::string SEARCH_THREADS_DEFAULT  = "1";
+static const std::string SEARCH_THREADS_DESCR    = "\
+\tNumber of threads to use for search.\n\
+";
+
 #ifndef NDEBUG
 
 static const std::string SEARCH_FIX_HC_KEY = "hc";
@@ -634,6 +642,10 @@ void SetArgsForSearch( COptionsParser & options_parser ) {
             SEARCH_SAM_HEADER_KEY, SEARCH_SAM_HEADER_SKEY,
             SEARCH_SAM_HEADER_DEFAULT, SEARCH_SAM_HEADER_DESCR,
             SEARCH_SAM_HEADER_LABEL );
+    options_parser.AddDefaultParam(
+            SEARCH_THREADS_KEY, SEARCH_THREADS_SKEY,
+            SEARCH_THREADS_DEFAULT, SEARCH_THREADS_DESCR,
+            SEARCH_THREADS_LABEL );
 
 #ifndef NDEBUG
     options_parser.AddOptionalParam(
@@ -838,6 +850,7 @@ int main( int argc, char * argv[] )
             options_parser.Bind( SEARCH_SA_END_KEY, options.sa_end );
             options_parser.Bind( SEARCH_EXTRA_TAGS_KEY, options.extra_tags );
             options_parser.Bind( SEARCH_SAM_HEADER_KEY, options.sam_header );
+            options_parser.Bind( SEARCH_THREADS_KEY, options.n_threads );
 
             {
                 std::string search_mode_str;
