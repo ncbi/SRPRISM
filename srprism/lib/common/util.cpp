@@ -45,7 +45,7 @@ const SEndianness::TTYPE SEndianness::BIG    = 0;
 //------------------------------------------------------------------------------
 SEndianness::TTYPE Endianness()
 {
-    static Uint4 i = 1;
+    Uint4 i = 1;
     return (((char *)&i)[0] == 0) ? SEndianness::BIG : SEndianness::LITTLE;
 }
 
