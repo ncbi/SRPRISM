@@ -43,7 +43,6 @@
 #include "../seq/seqinput_factory.hpp"
 #include "../seq/seqinput.hpp"
 #include "srprismdef.hpp"
-#include "scratch.hpp"
 #include "out_tabular.hpp"
 #include "out_sam.hpp"
 #include "search.hpp"
@@ -186,8 +185,6 @@ CSearch::CSearch( const SOptions & options )
     batch_init_data_.repeat_threshold = options.repeat_threshold;
 
     static const size_t TMP_RES_BUF_SIZE = 1024*1024ULL;
-    static const size_t SCRATCH_SIZE     = 128*MEGABYTE;
-    // static const size_t SCRATCH_SIZE     = 4*MEGABYTE;
 
     batch_init_data_.u_tmp_res_buf_size = TMP_RES_BUF_SIZE;
     batch_init_data_.p_tmp_res_buf_size = TMP_RES_BUF_SIZE;
@@ -197,10 +194,6 @@ CSearch::CSearch( const SOptions & options )
         t = (char *)mem_mgr_p_->Allocate( TMP_RES_BUF_SIZE );
         batch_init_data_.p_tmp_res_buf = t;
     }
-
-    scratch_p_.reset( new CScratchBitMap( 
-                mem_mgr_p_->Allocate( SCRATCH_SIZE ), BYTEBITS*SCRATCH_SIZE ) );
-    batch_init_data_.scratch_p = scratch_p_.get();
 
     seqstore_p_.reset( 
             new CSeqStore( options.index_basename, *mem_mgr_p_.get() ) );

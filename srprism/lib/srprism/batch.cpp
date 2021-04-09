@@ -189,7 +189,6 @@ CBatch::CBatch(
         pass_init_data_.mem_mgr_p = init_data.mem_mgr_p;
         pass_init_data_.seqstore_p = &seqstore_;
         pass_init_data_.tmp_store_p = &tmp_store_;
-        pass_init_data_.scratch_p = init_data.scratch_p;
         pass_init_data_.randomize = init_data.randomize;
         pass_init_data_.random_seed = init_data.random_seed;
 

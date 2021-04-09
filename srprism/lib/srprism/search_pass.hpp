@@ -52,7 +52,6 @@
 #include "tmpres_mgr.hpp"
 #include "index_iterator.hpp"
 #include "align.hpp"
-#include "scratch.hpp"
 #include "query_data.hpp"
 #include "query_store.hpp"
 #include "seqiter.hpp"
@@ -73,7 +72,6 @@
 #include <../src/internal/align_toolbox/srprism/lib/srprism/tmpres_mgr.hpp>
 #include <../src/internal/align_toolbox/srprism/lib/srprism/index_iterator.hpp>
 #include <../src/internal/align_toolbox/srprism/lib/srprism/align.hpp>
-#include <../src/internal/align_toolbox/srprism/lib/srprism/scratch.hpp>
 #include <../src/internal/align_toolbox/srprism/lib/srprism/query_data.hpp>
 #include <../src/internal/align_toolbox/srprism/lib/srprism/query_store.hpp>
 #include <../src/internal/align_toolbox/srprism/lib/srprism/seqiter.hpp>
@@ -114,9 +112,6 @@ class CSearchPassDef
             CSeqStore * seqstore_p;             // subject sequence data storage
             common::CTmpStore * tmp_store_p;    // temporary file name manager
 
-            CScratchBitMap * scratch_p; // scratch space to record visited
-                                        //      subject-query extension pairs
-                                        //      in bad 16-mer cases
             CQueryStore * queries_p;    // query data manager
             CStatMap * search_stats;    // global search statistics
             bool paired_search;         // indication of whether search as a whole

@@ -21,7 +21,6 @@ HEADERS =   align.hpp \
             result.hpp \
             rmap.hpp \
             scoring.hpp \
-            scratch.hpp \
             search.hpp \
             search_mode.hpp \
             search_pass.hpp \

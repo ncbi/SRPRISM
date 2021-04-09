@@ -184,7 +184,6 @@ class CSearch
         std::auto_ptr< CMemoryManager > mem_mgr_p_;
         std::auto_ptr< CSIdMap > sidmap_p_;
         std::auto_ptr< CSeqStore > seqstore_p_;
-        std::auto_ptr< CScratchBitMap > scratch_p_;
         std::auto_ptr< COutBase > out_p_;
 
         std::string input_;

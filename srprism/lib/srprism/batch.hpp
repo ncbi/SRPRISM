@@ -50,7 +50,6 @@
 #include <srprism/query_store.hpp>
 #include <srprism/search_pass.hpp>
 #include <srprism/out_base.hpp>
-#include <srprism/scratch.hpp>
 #include <srprism/rmap.hpp>
 
 #else
@@ -66,7 +65,6 @@
 #include <../src/internal/align_toolbox/srprism/lib/srprism/query_store.hpp>
 #include <../src/internal/align_toolbox/srprism/lib/srprism/search_pass.hpp>
 #include <../src/internal/align_toolbox/srprism/lib/srprism/out_base.hpp>
-#include <../src/internal/align_toolbox/srprism/lib/srprism/scratch.hpp>
 #include <../src/internal/align_toolbox/srprism/lib/srprism/rmap.hpp>
 
 #endif
@@ -111,7 +109,6 @@ class CBatch
             CMemoryManager * mem_mgr_p;
             CSeqStore * seqstore_p;
             COutBase * out_p;
-            CScratchBitMap * scratch_p;
 
             void * u_tmp_res_buf;
             size_t u_tmp_res_buf_size;
