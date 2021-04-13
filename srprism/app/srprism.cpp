@@ -42,7 +42,6 @@
 
 #include <srprism/search.hpp>
 #include <srprism/mkidx.hpp>
-#include <srprism/out_tabular.hpp>
 #include <srprism/out_sam.hpp>
 
 USE_NS( STD_SCOPES::common )
@@ -879,14 +878,11 @@ int main( int argc, char * argv[] )
 
             if( command == SEARCH_CMD ) {
                 options_parser.Bind( SEARCH_NRES_KEY  , options.res_limit );
-                // options_parser.Bind( SEARCH_OUTFMT_KEY, options.output_fmt );
-                options.output_fmt = "sam";
                 options_parser.Bind( 
                         SEARCH_SKIP_UNMAPPED_KEY, options.skip_unmapped );
             }
             else {
                 options.res_limit = 2;
-                options.output_fmt = "sam";
                 options.skip_unmapped = false;
             }
 

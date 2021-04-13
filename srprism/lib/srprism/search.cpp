@@ -43,7 +43,6 @@
 #include "../seq/seqinput_factory.hpp"
 #include "../seq/seqinput.hpp"
 #include "srprismdef.hpp"
-#include "out_tabular.hpp"
 #include "out_sam.hpp"
 #include "search.hpp"
 
@@ -60,12 +59,6 @@ const char * STAT_N_FILTER         = "n_filter";
 const char * STAT_N_CANDIDATES     = "n_candidates";
 const char * STAT_N_INPLACE        = "n_inplace";
 const char * STAT_N_INPLACE_ALIGNS = "n_inplace_align";
-
-//------------------------------------------------------------------------------
-namespace {
-    const char * SAM_OUTPUT_FMT_STR = "sam";
-    const char * TAB_OUTPUT_FMT_STR = "tabular";
-}
 
 //------------------------------------------------------------------------------
 S_IPAM ParseResConfStr( std::string rcstr )
@@ -207,28 +200,17 @@ CSearch::CSearch( const SOptions & options )
     batch_init_data_.mem_mgr_p = mem_mgr_p_.get();
     batch_init_data_.seqstore_p = seqstore_p_.get();
 
-    if( options.output_fmt == TAB_OUTPUT_FMT_STR ) {
-        out_p_.reset( new COutTabular(
-                    options.output, options.input,
-                    options.input_fmt, options.input_compression, 
-                    options.skip_unmapped,
-                    options.force_paired, options.force_unpaired,
-                    !options.use_qids,
-                    seqstore_p_.get(), sidmap_p_.get() ) );
-    }
-    else if( options.output_fmt == SAM_OUTPUT_FMT_STR ) {
-        out_p_.reset( new COutSAM(
-                    options.output, options.input,
-                    options.input_fmt, options.extra_tags,
-                    options.cmdline, options.sam_header,
-                    options.input_compression,
-                    options.skip_unmapped,
-                    options.force_paired, options.force_unpaired,
-                    !options.use_qids,
-                    ( options.search_mode == SSearchMode::DEFAULT ||
-                      options.search_mode == SSearchMode::SUM_ERR ),
-                    seqstore_p_.get(), sidmap_p_.get() ) );
-    }
+    out_p_.reset( new COutSAM(
+                options.output, options.input,
+                options.input_fmt, options.extra_tags,
+                options.cmdline, options.sam_header,
+                options.input_compression,
+                options.skip_unmapped,
+                options.force_paired, options.force_unpaired,
+                !options.use_qids,
+                ( options.search_mode == SSearchMode::DEFAULT ||
+                  options.search_mode == SSearchMode::SUM_ERR ),
+                seqstore_p_.get(), sidmap_p_.get() ) );
 
     batch_init_data_.out_p = out_p_.get();
 }
@@ -241,25 +223,6 @@ CSearch::~CSearch()
 //------------------------------------------------------------------------------
 void CSearch::Validate( const SOptions & opt ) const
 {
-    {
-        const char * output_fmts[] = { SAM_OUTPUT_FMT_STR, TAB_OUTPUT_FMT_STR };
-        const size_t output_fmts_len = 
-            sizeof( output_fmts )/sizeof( const char * );
-
-        {
-            size_t i( 0 );
-
-            for( ; i < output_fmts_len; ++i ) {
-                if( opt.output_fmt == output_fmts[i] ) break;
-            }
-
-            if( i == output_fmts_len ) {
-                M_THROW( CException, VALIDATE,
-                         "wrong output format name: " << opt.output_fmt );
-            }
-        }
-    }
-
     if( opt.search_mode != SSearchMode::DEFAULT && 
         opt.search_mode != SSearchMode::SUM_ERR &&
         opt.search_mode != SSearchMode::PARTIAL &&

@@ -80,7 +80,6 @@ class CSearch
         {
             SOptions()
                 : input_fmt( "fasta" ),
-                  output_fmt( "tabular" ),
                   tmpdir( "." ),
                   resconf_str( "0100" ),
                   input_compression( common::CFileBase::COMPRESSION_AUTO ),
@@ -115,7 +114,6 @@ class CSearch
             std::string input;
             std::string output;
             std::string input_fmt;
-            std::string output_fmt;
             std::string tmpdir;
             std::string resconf_str;
             std::string paired_log;
