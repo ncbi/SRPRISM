@@ -62,10 +62,12 @@ class CSeqInputFactory
             typedef common::CException TBase;
 
             static const TErrorCode TYPE = 0;
+            static const TErrorCode FORMAT = 1;
 
             virtual const std::string ErrorMessage( TErrorCode code ) const
             {
                 if( code == TYPE ) return "bad input type";
+                if( code == FORMAT ) return "bad input format";
                 else return TBase::ErrorMessage( code );
             }
 
