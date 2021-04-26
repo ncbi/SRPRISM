@@ -54,6 +54,7 @@ CBatch::CBatch(
         CSeqInput & in, TQueryOrdId start_qid )
     : init_data_( init_data ),
       tmp_store_( init_data.tmpdir ),
+      /*
       u_tmpres_mgr_( 
               init_data.u_tmp_res_buf, init_data.u_tmp_res_buf_size, 
               "utmpres", tmp_store_ ),
@@ -61,6 +62,7 @@ CBatch::CBatch(
               init_data.p_tmp_res_buf, init_data.p_tmp_res_buf_size, 
               "ptmpres", tmp_store_ ),
       tmpres_mgr_p_( &p_tmpres_mgr_ ),
+      */
       seqstore_( *init_data.seqstore_p ), rmap_( init_data.index_basename ),
       use_sids_( init_data.use_sids ), use_qids_( init_data.use_qids ),
       search_mode_( init_data.search_mode ),
@@ -70,6 +72,18 @@ CBatch::CBatch(
       paired_log_( init_data.paired_log )
 {
     seqstore_.Load();
+
+    if( init_data_.n_threads > 1 )
+    {
+        auto free_space(
+            (init_data_.mem_mgr_p->GetFreeSpace())/init_data_.n_threads );
+        init_data_.mem_mgr_p.reset( new CMemoryManager( free_space ) );
+        char * t( (char *)init_data_.mem_mgr_p->Allocate( TMP_RES_BUF_SIZE ) );
+        init_data_.u_tmp_res_buf = t;
+        t = (char *)init_data_.mem_mgr_p->Allocate( TMP_RES_BUF_SIZE );
+        init_data_.p_tmp_res_buf = t;
+    }
+
     Uint4 u_res_limit( 0 );
     
     if( search_mode_ == SSearchMode::DEFAULT ) {
@@ -186,7 +200,8 @@ CBatch::CBatch(
 
         pass_init_data_.ipam_vec = init_data.ipam_vec;
 
-        pass_init_data_.mem_mgr_p = init_data.mem_mgr_p;
+        // pass_init_data_.mem_mgr_p = init_data.mem_mgr_p;
+        pass_init_data_.mem_mgr_p = init_data.mem_mgr_p.get();
         pass_init_data_.seqstore_p = &seqstore_;
         pass_init_data_.tmp_store_p = &tmp_store_;
         pass_init_data_.randomize = init_data.randomize;
@@ -200,7 +215,8 @@ CBatch::CBatch(
 template<> bool CBatch::Run< true >( void )
 {
     pass_init_data_.paired_search = true;
-    pass_init_data_.tmpres_mgr_p = &u_tmpres_mgr_;
+    // pass_init_data_.tmpres_mgr_p = &u_tmpres_mgr_;
+    pass_init_data_.tmpres_mgr_p = u_tmpres_mgr_.get();
 
     if( pass_init_data_.n_err > 2 ) {
         RunPass< HASH_NORMAL, false >( false, true );
@@ -226,7 +242,8 @@ template<> bool CBatch::Run< true >( void )
     else SRPRISM_ASSERT( false );
 
     if( !cont ) {
-        tmpres_mgr_p_ = &u_tmpres_mgr_;
+        // tmpres_mgr_p_ = &u_tmpres_mgr_;
+        tmpres_mgr_p_ = u_tmpres_mgr_.get();
 
         if( search_mode_ == SSearchMode::DEFAULT ) {
             PostProcess< SSearchMode::DEFAULT, false >();
@@ -242,7 +259,8 @@ template<> bool CBatch::Run< true >( void )
         return false;
     }
 
-    pass_init_data_.tmpres_mgr_p = &p_tmpres_mgr_;
+    // pass_init_data_.tmpres_mgr_p = &p_tmpres_mgr_;
+    pass_init_data_.tmpres_mgr_p = p_tmpres_mgr_.get();
     queries_p_->SetPairDistance( init_data_.pair_distance );
     queries_p_->SetPairFuzz( init_data_.pair_fuzz );
 
@@ -275,7 +293,8 @@ template<> bool CBatch::Run< true >( void )
 template<> bool CBatch::Run< false >( void )
 {
     pass_init_data_.paired_search = false;
-    pass_init_data_.tmpres_mgr_p = &p_tmpres_mgr_;
+    // pass_init_data_.tmpres_mgr_p = &p_tmpres_mgr_;
+    pass_init_data_.tmpres_mgr_p = p_tmpres_mgr_.get();
 
     if( pass_init_data_.n_err > 2 ) {
         RunPass< HASH_NORMAL, false >( false, true );
@@ -478,7 +497,8 @@ size_t CBatch::IdentifyPairs( CResult * s, size_t n_left, size_t n_right )
                     i->second->GetNId( 0 ), 
                     i->second->GetNDel( 0 ),
                     i->second->GetNGOpen( 0 ) ) ) {
-            CResult r( p_tmpres_mgr_.Save( CResult::EstimateLen( 
+            // CResult r( p_tmpres_mgr_.Save( CResult::EstimateLen( 
+            CResult r( p_tmpres_mgr_->Save( CResult::EstimateLen( 
                             2, i->first->NErr( 0 ), i->second->NErr( 0 ) ) ) );
             r.Init( 
                     qn, i->first->SNum(), 
@@ -560,7 +580,8 @@ void CBatch::RetainUnpairedResults( CResult * s, CResult * e )
 
         if( qn == pqn ) {
             if( queries_p_->DelResult< TScoring >( qn, *s ) ) {
-                CResult r( p_tmpres_mgr_.Save( s->GetRawLen() ) );
+                // CResult r( p_tmpres_mgr_.Save( s->GetRawLen() ) );
+                CResult r( p_tmpres_mgr_->Save( s->GetRawLen() ) );
                 r.Clone( *s );
             }
         }
@@ -845,11 +866,13 @@ bool CBatch::DiscoverInsertSize( void )
                      "processing results for queries " << bounds.first <<
                      " -- " << bounds.second );
             M_TRACE( CTracer::INFO_LVL, "loading results" );
-            u_tmpres_mgr_.LoadInit();
+            // u_tmpres_mgr_.LoadInit();
+            u_tmpres_mgr_->LoadInit();
             size_t n_res = 0;
 
             while( n_res < max_results ) {
-                *(--res_start) = u_tmpres_mgr_.Load();
+                // *(--res_start) = u_tmpres_mgr_.Load();
+                *(--res_start) = u_tmpres_mgr_->Load();
                 if( res_start->Empty() ) { ++res_start; break; }
                 TQNum qn( res_start->QNum() );
 
@@ -991,11 +1014,13 @@ bool CBatch::InterProcess( void )
                      "processing results for queries " << bounds.first <<
                      " -- " << bounds.second );
             M_TRACE( CTracer::INFO_LVL, "loading results" );
-            u_tmpres_mgr_.LoadInit();
+            // u_tmpres_mgr_.LoadInit();
+            u_tmpres_mgr_->LoadInit();
             size_t n_res = 0;
 
             while( n_res < max_results ) {
-                *(--res_start) = u_tmpres_mgr_.Load();
+                // *(--res_start) = u_tmpres_mgr_.Load();
+                *(--res_start) = u_tmpres_mgr_->Load();
                 if( res_start->Empty() ) { ++res_start; break; }
                 TQNum qn( res_start->QNum() );
 
@@ -1044,7 +1069,8 @@ bool CBatch::InterProcess( void )
                 }
             }
 
-            u_tmpres_mgr_.LoadFinal();
+            // u_tmpres_mgr_.LoadFinal();
+            u_tmpres_mgr_->LoadFinal();
             M_TRACE( CTracer::INFO_LVL, "loaded " << n_res << " results" );
             std::stable_sort( 
                     res_start, res_end, CResult::SHLCompare( &seqstore_ ) );

@@ -77,6 +77,8 @@ class CBatch
 {
     public:
 
+        static const size_t TMP_RES_BUF_SIZE = 1024*1024ULL;
+
         struct SBatchInitData
         {
             std::string index_basename;
@@ -91,6 +93,7 @@ class CBatch
             common::Uint2 pair_distance;
             common::Uint2 pair_fuzz;
             common::Uint2 max_qlen;
+            common::Uint2 n_threads;
             common::Sint2 sa_start;
             common::Sint2 sa_end;
             common::Uint1 n_err;
@@ -106,7 +109,8 @@ class CBatch
 
             S_IPAM ipam_vec;
 
-            CMemoryManager * mem_mgr_p;
+            // CMemoryManager * mem_mgr_p;
+            std::auto_ptr< CMemoryManager > mem_mgr_p;
             CSeqStore * seqstore_p;
             COutBase * out_p;
 
@@ -250,10 +254,11 @@ class CBatch
             else return qs.HasRepHashes( qn ) ? 0 : 1;
         }
 
-        SBatchInitData & init_data_;
+        // SBatchInitData & init_data_;
+        SBatchInitData init_data_;
         common::CTmpStore tmp_store_;
-        CTmpResMgr u_tmpres_mgr_;
-        CTmpResMgr p_tmpres_mgr_;
+        std::unique_ptr< CTmpResMgr > u_tmpres_mgr_;
+        std::unique_ptr< CTmpResMgr > p_tmpres_mgr_;
         CTmpResMgr * tmpres_mgr_p_;
         CSeqStore & seqstore_;
         CRMap rmap_;

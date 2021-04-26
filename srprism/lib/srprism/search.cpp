@@ -163,6 +163,7 @@ CSearch::CSearch( const SOptions & options )
     batch_init_data_.n_err          = options.n_err;
     batch_init_data_.use_qids       = options.use_qids;
     batch_init_data_.use_sids       = options.use_sids;
+    batch_init_data_.n_threads      = options.n_threads;
     batch_init_data_.sa_start       = options.sa_start;
     batch_init_data_.sa_end         = options.sa_end;
     batch_init_data_.paired_log     = options.paired_log;
@@ -177,10 +178,15 @@ CSearch::CSearch( const SOptions & options )
 
     batch_init_data_.repeat_threshold = options.repeat_threshold;
 
-    static const size_t TMP_RES_BUF_SIZE = 1024*1024ULL;
+    // static const size_t TMP_RES_BUF_SIZE = 1024*1024ULL;
+    static const size_t TMP_RES_BUF_SIZE = CBatch::TMP_RES_BUF_SIZE;
 
     batch_init_data_.u_tmp_res_buf_size = TMP_RES_BUF_SIZE;
     batch_init_data_.p_tmp_res_buf_size = TMP_RES_BUF_SIZE;
+    batch_init_data_.u_tmp_res_buf = 
+    batch_init_data_.p_tmp_res_buf = nullptr;
+
+    if( options.n_threads == 1 )
     {
         char * t( (char *)mem_mgr_p_->Allocate( TMP_RES_BUF_SIZE ) );
         batch_init_data_.u_tmp_res_buf = t;
@@ -197,7 +203,8 @@ CSearch::CSearch( const SOptions & options )
                 new CSIdMap( options.index_basename, *mem_mgr_p_.get() ) );
     }
 
-    batch_init_data_.mem_mgr_p = mem_mgr_p_.get();
+    // batch_init_data_.mem_mgr_p = mem_mgr_p_.get();
+    batch_init_data_.mem_mgr_p = mem_mgr_p_;
     batch_init_data_.seqstore_p = seqstore_p_.get();
 
     out_p_.reset( new COutSAM(
