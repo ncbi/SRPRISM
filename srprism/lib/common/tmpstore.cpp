@@ -51,6 +51,7 @@
 #endif
 
 #include <sstream>
+#include <thread>
 
 #include "trace.hpp"
 #include "tmpstore.hpp"
@@ -72,8 +73,9 @@ CTmpStore::CTmpStore( const std::string & tmp_dir_name )
 
     tmp_name_prefix_ = tmp_dir_name + FPATH_SEP + ".";
     int pid = GETPID();
+    auto tid( std::this_thread::get_id() );
     std::ostringstream os;
-    os << "." << pid << "." << templ;
+    os << "." << pid << "." << tid << "." << templ;
     tmp_name_suffix_ = os.str();
 }
 
