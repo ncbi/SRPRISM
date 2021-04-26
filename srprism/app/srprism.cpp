@@ -930,6 +930,17 @@ int main( int argc, char * argv[] )
             }
 #endif
 
+            if( options.n_threads > 1 &&
+                (   !options.paired_log.empty() ||
+                    options.discover_sep ) )
+            {
+                M_TRACE(
+                    CTracer::WARNING_LVL,
+                    "--plog and --discover-insert require require single "
+                    "thread; setting number of threads to 1" );
+                options.n_threads = 1;
+            }
+
             CSearch search( options );
             search.Run();
         }
