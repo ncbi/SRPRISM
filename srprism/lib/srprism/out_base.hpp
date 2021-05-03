@@ -221,14 +221,6 @@ class COutBase
                 else ++n_res[(*i)->PairPos() + 1];
             }
 
-            /*
-            This was the original interpretation of mat_unmapped flag:
-            changed to reflect the state of individual results.
-
-            bool mate_unmapped( 
-                    n_res[0] == 0 && (n_res[1] == 0 || n_res[2] == 0) );
-            */
-
             bool mate_unmapped( n_res[0] == 0 );
 
             if( n_res[1] != 0 && n_res[2] != 0 ) {

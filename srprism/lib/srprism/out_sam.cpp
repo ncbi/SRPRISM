@@ -303,11 +303,8 @@ void COutSAM::ResultOut(
     char mdtag[] = { 'M', 'D' };
     char nmtag[] = { 'N', 'M' };
 
-    // Uint2 lo_1( result.GetLeftOffset( 0 ) );
-
     if( paired_ ) {
         if( result.Paired() ) {
-            // Uint2 lo_2( result.GetLeftOffset( 1 ) );
             SSAMRecord sam_record_1, sam_record_2;
             sam_record_1.extra_tags = sam_record_2.extra_tags = extra_tags_;
             sam_record_1.qname = sam_record_2.qname = res_qid;
@@ -336,15 +333,6 @@ void COutSAM::ResultOut(
             Sint8 diff( 0 );
 
             {
-                /*
-                Sint8 l1( result.SOff( 0 ) + result.GetLeftOffset( 0 ) ),
-                      l2( result.SOff( 1 ) + result.GetLeftOffset( 1 ) );
-                l1 -= result.GetLeftOffset( 0 );
-                l2 -= result.GetLeftOffset( 1 );
-                Sint8 l( std::min( l1, l2 ) ),
-                      r( std::max( l1 + result.GetFullSubjLen( 0 ),
-                                   l2 + result.GetFullSubjLen( 1 ) ) );
-                */
                 Sint8 l1( result.SOff( 0 ) ),
                       l2( result.SOff( 1 ) );
                 Sint8 l( std::min( l1, l2 ) ),
@@ -363,18 +351,14 @@ void COutSAM::ResultOut(
             sam_record_1.msname = sam_record_2.msname = res_sid;
             sam_record_1.pos = 1 + seq_store_->GetAdjustedPos( 
                     result.SNum(), result.SOff( 0 ) );
-                    // result.SNum(), lo_1 + result.SOff( 0 ) );
             sam_record_2.pos = 1 + seq_store_->GetAdjustedPos(
                     result.SNum(), result.SOff( 1 ) );
-                    // result.SNum(), lo_2 + result.SOff( 1 ) );
             sam_record_1.CIGAR_str = ComputeCIGAR( result, 0 );
             sam_record_2.CIGAR_str = ComputeCIGAR( result, 1 );
             sam_record_1.mpos = 1 + seq_store_->GetAdjustedPos(
                     result.SNum(), result.SOff( 1 ) );
-                    // result.SNum(), lo_2 + result.SOff( 1 ) );
             sam_record_2.mpos = 1 + seq_store_->GetAdjustedPos(
                     result.SNum(), result.SOff( 0 ) );
-                    // result.SNum(), lo_1 + result.SOff( 0 ) );
             sam_record_1.seq = ComputeSeq( 
                     0, (result.Strand( 0 ) == seq::STRAND_RV) );
             sam_record_2.seq = ComputeSeq( 
@@ -401,7 +385,6 @@ void COutSAM::ResultOut(
                 EmptyOut( 
                         0, 1 + seq_store_->GetAdjustedPos( 
                             result.SNum(), result.SOff( 0 ) ),
-                            // result.SNum(), lo_1 + result.SOff( 0 ) ),
                         res_sid, result.Strand( 0 ), primary );
             }
 
@@ -426,7 +409,6 @@ void COutSAM::ResultOut(
             sam_record.sname = res_sid;
             sam_record.pos = 1 + seq_store_->GetAdjustedPos( 
                     result.SNum(), result.SOff( 0 ) );
-                    // result.SNum(), lo_1 + result.SOff( 0 ) );
             sam_record.CIGAR_str = ComputeCIGAR( result, 0 );
             sam_record.seq = ComputeSeq(
                     idx, (result.Strand( 0 ) == seq::STRAND_RV) );
@@ -442,7 +424,6 @@ void COutSAM::ResultOut(
                 EmptyOut( 
                         1, 1 + seq_store_->GetAdjustedPos( 
                             result.SNum(), result.SOff( 0 ) ),
-                            // result.SNum(), lo_1 + result.SOff( 0 ) ),
                         res_sid, result.Strand( 0 ), primary );
             }
         }
@@ -458,7 +439,6 @@ void COutSAM::ResultOut(
         sam_record.sname     = res_sid;
         sam_record.pos       = 1 + seq_store_->GetAdjustedPos( 
                 result.SNum(), result.SOff( 0 ) );
-                // result.SNum(), lo_1 + result.SOff( 0 ) );
         sam_record.CIGAR_str = ComputeCIGAR( result, 0 );
         sam_record.seq = 
             ComputeSeq( 0, (result.Strand( 0 ) == seq::STRAND_RV) );
@@ -522,10 +502,6 @@ void COutSAM::ResultOut(
     char mdtag[] = { 'M', 'D' };
     char nmtag[] = { 'N', 'M' };
 
-    /*
-    Uint2 lo_1( result_1.GetLeftOffset( 0 ) );
-    Uint2 lo_2( result_2.GetLeftOffset( 0 ) );
-    */
     SSAMRecord sam_record_1, sam_record_2;
     sam_record_1.extra_tags = sam_record_2.extra_tags = extra_tags_;
     sam_record_1.qname = sam_record_2.qname = res_qid;
@@ -556,10 +532,8 @@ void COutSAM::ResultOut(
     sam_record_2.msname = res_sid_1;
     sam_record_1.pos = 1 + seq_store_->GetAdjustedPos( 
             result_1.SNum(), result_1.SOff( 0 ) );
-            // result_1.SNum(), lo_1 + result_1.SOff( 0 ) );
     sam_record_2.pos = 1 + seq_store_->GetAdjustedPos(
             result_2.SNum(), result_2.SOff( 0 ) );
-            // result_2.SNum(), lo_2 + result_2.SOff( 0 ) );
     sam_record_1.CIGAR_str = ComputeCIGAR( result_1, 0 );
     sam_record_2.CIGAR_str = ComputeCIGAR( result_2, 0 );
     sam_record_1.mpos = sam_record_2.pos;
@@ -589,15 +563,12 @@ void COutSAM::FinalizeBatch() {
     if( !skip_unmapped_ ) {
         TQueryOrdId last_id( qs_->size() );
         if( paired_ ) last_id /= 2;
-        // last_id += q_adj_ + 1;
         last_id += q_adj_;
 
         while( !in_p_->Done() && in_p_->QId() < last_id ) {
             if( !in_p_->Skip( in_p_->QId() + 1 ) ) break;
-            // if( in_p_->QId() >= last_id ) break;
             EmptyOut( 0 );
             if( paired_ ) EmptyOut( 1 );
-            // if( in_p_->QId() >= last_id ) break;
         }
     }
 }
@@ -605,15 +576,6 @@ void COutSAM::FinalizeBatch() {
 //------------------------------------------------------------------------------
 COutSAM::~COutSAM()
 {
-    /*
-    if( !skip_unmapped_ ) {
-        while( !in_p_->Done() ) {
-            if( !in_p_->Skip( in_p_->QId() + 1 ) ) break;
-            EmptyOut( 0 );
-            if( paired_ ) EmptyOut( 1 );
-        }
-    }
-    */
 }
 
 END_NS( srprism )
