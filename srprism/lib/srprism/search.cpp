@@ -229,6 +229,9 @@ CSearch::CSearch( const SOptions & options )
 
     batch_init_data_.out_p = out_p_.get();
     */
+    out_p_.reset( new COutSAM_Collator(
+        options.output, options.cmdline,
+        seqstore_p_.get(), sidmap_p_.get(), options.sam_header ) );
 }
 
 //------------------------------------------------------------------------------
@@ -388,6 +391,13 @@ void CSearch::Run_priv(void)
 
     static char const * OUT_FNAME_PFX( "outsam-" );
     std::map< Uint4, thread_info > threads;
+    Uint4 batch_out( 0 );
+
+    /*
+    COutSAM_Collator out(
+        options.output, options.cmdline,
+        seqstore_p_.get(), sidmap_p_.get(), options.sam_header );
+    */
 
     while( !in->Done() && batch_num <= end_batch_ ) {
         batch_init_data_.batch_limit = 
@@ -407,7 +417,7 @@ void CSearch::Run_priv(void)
                 // options.input_fmt, options.extra_tags,
                 "fasta", extra_tags_,
                 // options.cmdline, options.sam_header,
-                "", "",
+                "", false,
                 // options.input_compression,
                 CFileBase::COMPRESSION_NONE,
                 // options.skip_unmapped,
@@ -442,6 +452,12 @@ void CSearch::Run_priv(void)
 
                 // append batch results to the output
                 //
+                {
+                    std::string out_fname_pfx( OUT_FNAME_PFX );
+                    out_fname_pfx += std::to_string( batch_oid );
+                    auto out_fname( tmp_store_p_->Register( out_fname_pfx ) );
+                    out_p_->Append( out_fname );
+                }
 
                 // stop if needed
                 //
@@ -496,6 +512,17 @@ void CSearch::Run_priv(void)
 
                 // check if we have some output to report
                 //
+                for( ; batch_out < batch_oid; ++batch_out )
+                {
+                    if( threads.count( batch_out ) == 0 )
+                    {
+                        std::string out_fname_pfx( OUT_FNAME_PFX );
+                        out_fname_pfx += std::to_string( batch_out );
+                        auto out_fname( tmp_store_p_->Register( out_fname_pfx ) );
+                        out_p_->Append( out_fname );
+                    }
+                    else break;
+                }
             }
         }
         else M_TRACE( CTracer::INFO_LVL, "skipping batch " << 1 + batch_num );
@@ -519,6 +546,17 @@ void CSearch::Run_priv(void)
 
     // report the rest of the output
     //
+    for( ; batch_out < batch_oid; ++batch_out )
+    {
+        if( threads.count( batch_out ) == 0 )
+        {
+            std::string out_fname_pfx( OUT_FNAME_PFX );
+            out_fname_pfx += std::to_string( batch_out );
+            auto out_fname( tmp_store_p_->Register( out_fname_pfx ) );
+            out_p_->Append( out_fname );
+        }
+        else break;
+    }
 }
 
 //------------------------------------------------------------------------------

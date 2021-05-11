@@ -64,6 +64,63 @@ START_NS( srprism )
 //------------------------------------------------------------------------------
 class COutSAM_Collator
 {
+public:
+
+    COutSAM_Collator(
+        std::string const & name, std::string const & cmdline,
+        CSeqStore * seq_store, CSIdMap * sid_map, bool print_header )
+    {
+        if( name.empty() ) os_ = &std::cout;
+        else
+        {
+            os_ = new std::ofstream( name );
+
+            if( !os_ || !os_->good() ) {
+                M_THROW( COutBase::CException, OPEN, "[" << name << "]" );
+            }
+
+            os_->exceptions( std::ios_base::badbit );
+            os_p_.reset( os_ );
+        }
+
+        if( print_header )
+        {
+            (*os_) << "@HD\tVN:1.0\tGO:query\n";
+            (*os_) << "@PG\tID:srprism\tPN:srprism\tCL:" << cmdline << '\n';
+            seq_store->Load();
+
+            for( size_t i( 0 ); i < seq_store->NSeq(); ++i )
+            {
+                (*os_) << "@SQ\tSN:" << (*sid_map)[i]
+                       << "\tLN:" << seq_store->GetSeqLen( i ) << '\n';
+            }
+
+            seq_store->Unload();
+        }
+
+        (*os_) << std::flush;
+    }
+
+    void Append( std::string const & name )
+    {
+        std::ifstream is( name );
+        is.exceptions( std::ios_base::badbit );
+        std::string line;
+
+        while( is )
+        {
+            std::getline( is, line );
+            if( line.empty() ) continue;
+            (*os_) << line << '\n';
+        }
+
+        (*os_) << std::flush;
+    }
+
+private:
+
+    std::ostream * os_;
+    std::unique_ptr< std::ostream > os_p_;
 };
 
 //------------------------------------------------------------------------------
