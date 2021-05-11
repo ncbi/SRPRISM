@@ -182,10 +182,13 @@ class CSearch
         std::auto_ptr< CMemoryManager > mem_mgr_p_;
         std::auto_ptr< CSIdMap > sidmap_p_;
         std::auto_ptr< CSeqStore > seqstore_p_;
-        std::auto_ptr< COutBase > out_p_;
+
+        std::unique_ptr< common::CTmpStore > tmp_store_p_;
+        // std::auto_ptr< COutBase > out_p_;
 
         std::string input_;
         std::string input_fmt_;
+        std::string extra_tags_;
 
         common::CFileBase::TCompression input_c_;
 
@@ -193,6 +196,8 @@ class CSearch
         bool force_paired_;
         bool force_unpaired_;
         bool strict_batch_;
+        bool skip_unmapped_;
+        bool use_qids_;
 
         Uint4 start_batch_;
         Uint4 end_batch_;

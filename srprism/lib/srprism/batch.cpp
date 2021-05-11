@@ -69,7 +69,7 @@ CBatch::CBatch(
       final_res_limit_( init_data.res_limit + 1 ),
       batch_oid_( batch_oid ),
       start_qid_( start_qid ), end_qid_( start_qid ), queries_p_( 0 ),
-      out_p_( init_data.out_p ),
+      // out_p_( init_data.out_p.get() ),
       paired_log_( init_data.paired_log )
 {
     seqstore_.Load();

@@ -117,6 +117,7 @@ CSearch::CSearch( const SOptions & options )
     mem_mgr_p_.reset( new CMemoryManager( MEGABYTE*options.mem_limit ) );
     input_          = options.input;
     input_fmt_      = options.input_fmt;
+    extra_tags_     = options.extra_tags;
     use_sids_       = options.use_sids;
     force_paired_   = options.force_paired;
     force_unpaired_ = options.force_unpaired;
@@ -126,6 +127,8 @@ CSearch::CSearch( const SOptions & options )
     batch_limit_    = options.batch_limit;
     if( force_paired_ ) batch_limit_ *= 2;
     input_c_        = options.input_compression;
+    skip_unmapped_  = options.skip_unmapped;
+    use_qids_       = options.use_qids;
 
     if( options.sa_start < 0 ) { 
         std::string rs( options.resconf_str );
@@ -207,6 +210,9 @@ CSearch::CSearch( const SOptions & options )
     batch_init_data_.mem_mgr_p = mem_mgr_p_;
     batch_init_data_.seqstore_p = seqstore_p_.get();
 
+    tmp_store_p_.reset( new CTmpStore( options.tmpdir ) );
+    // batch_init_data_.out_tmp_store_p = tmp_store_p_.get();
+    /*
     out_p_.reset( new COutSAM(
                 options.output, options.input,
                 options.input_fmt, options.extra_tags,
@@ -220,6 +226,7 @@ CSearch::CSearch( const SOptions & options )
                 seqstore_p_.get(), sidmap_p_.get() ) );
 
     batch_init_data_.out_p = out_p_.get();
+    */
 }
 
 //------------------------------------------------------------------------------
@@ -339,6 +346,8 @@ void CSearch::Validate( const SOptions & opt ) const
 //------------------------------------------------------------------------------
 void CSearch::Run_priv(void)
 {
+    static char const * TMP_SAM_OUT = "sam-out-";
+
     int request_cols( 0 );
     if( force_unpaired_ ) request_cols = 1;
     if( force_paired_ ) request_cols = 2;
@@ -365,10 +374,43 @@ void CSearch::Run_priv(void)
     TQueryOrdId start_qid( 0 ), batch_start_qid( 0 );
     Uint4 batch_num( 0 ), batch_oid( 0 );
 
+    static char const * OUT_FNAME_PFX( "outsam-" );
+
     while( !in->Done() && batch_num <= end_batch_ ) {
         batch_init_data_.batch_limit = 
             batch_limit_ - (start_qid - batch_start_qid);
-        CBatch batch( batch_init_data_, *in, start_qid, batch_oid++ );
+        CBatch batch( batch_init_data_, *in, start_qid, batch_oid );
+
+        // setup local batch output
+        {
+            std::string in_fname_pfx( CQueryStore::INPUT_DUMP_NAME );
+            in_fname_pfx += std::to_string( batch_oid );
+            std::string out_fname_pfx( OUT_FNAME_PFX );
+            out_fname_pfx += std::to_string( batch_oid++ );
+            auto out_fname( tmp_store_p_->Register( out_fname_pfx ) );
+            batch.SetBatchOutput( new COutSAM(
+                // options.output, options.input,
+                out_fname, in_fname_pfx,
+                // options.input_fmt, options.extra_tags,
+                "fasta", extra_tags_,
+                // options.cmdline, options.sam_header,
+                "", "",
+                // options.input_compression,
+                CFileBase::COMPRESSION_NONE,
+                // options.skip_unmapped,
+                skip_unmapped_,
+                // options.force_paired, options.force_unpaired,
+                force_paired_, force_unpaired_,
+                // !options.use_qids,
+                !use_qids_,
+                /*
+                ( options.search_mode == SSearchMode::DEFAULT ||
+                  options.search_mode == SSearchMode::SUM_ERR ),
+                */
+                ( batch_init_data_.search_mode == SSearchMode::DEFAULT ||
+                  batch_init_data_.search_mode == SSearchMode::SUM_ERR ),
+                seqstore_p_.get(), sidmap_p_.get() ) );
+        }
 
         if( batch_num >= start_batch_ && batch_num <= end_batch_ ) {
             bool cont;

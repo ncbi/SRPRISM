@@ -78,6 +78,7 @@ class CBatch
     public:
 
         static const size_t TMP_RES_BUF_SIZE = 1024*1024ULL;
+        // static const char * TMP_OUT_FNAME;
 
         struct SBatchInitData
         {
@@ -112,7 +113,9 @@ class CBatch
             // CMemoryManager * mem_mgr_p;
             std::auto_ptr< CMemoryManager > mem_mgr_p;
             CSeqStore * seqstore_p;
-            COutBase * out_p;
+            // common::CTmpStore * out_tmp_store_p;
+            // COutBase * out_p;
+            // std::shared_ptr< COutBase > out_p;
 
             void * u_tmp_res_buf;
             size_t u_tmp_res_buf_size;
@@ -160,6 +163,9 @@ class CBatch
 
         TQueryOrdId StartQId(void) const { return start_qid_; }
         TQueryOrdId EndQId(void) const { return end_qid_; }
+
+        void SetBatchOutput( COutBase * out_p )
+        { out_p_.reset( out_p ); }
 
     private:
 
@@ -271,7 +277,7 @@ class CBatch
         TQueryOrdId end_qid_;
         std::auto_ptr< CQueryStore > queries_p_;
         CSearchPassDef::SInitData pass_init_data_;
-        COutBase * out_p_;
+        std::unique_ptr< COutBase > out_p_;
         std::string paired_log_;
 };
 
