@@ -33,6 +33,8 @@
 
 #include "../common/def.h"
 
+#include <atomic>
+#include <thread>
 #include <cassert>
 #include <string>
 #include <vector>
@@ -344,6 +346,16 @@ void CSearch::Validate( const SOptions & opt ) const
 }
 
 //------------------------------------------------------------------------------
+namespace
+{
+    struct thread_info
+    {
+        std::atomic< bool > done;
+        std::shared_ptr< std::thread > th;
+    };
+}
+
+//------------------------------------------------------------------------------
 void CSearch::Run_priv(void)
 {
     static char const * TMP_SAM_OUT = "sam-out-";
@@ -375,20 +387,21 @@ void CSearch::Run_priv(void)
     Uint4 batch_num( 0 ), batch_oid( 0 );
 
     static char const * OUT_FNAME_PFX( "outsam-" );
+    std::map< Uint4, thread_info > threads;
 
     while( !in->Done() && batch_num <= end_batch_ ) {
         batch_init_data_.batch_limit = 
             batch_limit_ - (start_qid - batch_start_qid);
-        CBatch batch( batch_init_data_, *in, start_qid, batch_oid );
+        std::shared_ptr< CBatch > batch( std::make_shared< CBatch >( batch_init_data_, *in, start_qid, batch_oid ) );
 
         // setup local batch output
         {
             std::string in_fname_pfx( CQueryStore::INPUT_DUMP_NAME );
             in_fname_pfx += std::to_string( batch_oid );
             std::string out_fname_pfx( OUT_FNAME_PFX );
-            out_fname_pfx += std::to_string( batch_oid++ );
+            out_fname_pfx += std::to_string( batch_oid );
             auto out_fname( tmp_store_p_->Register( out_fname_pfx ) );
-            batch.SetBatchOutput( new COutSAM(
+            batch->SetBatchOutput( new COutSAM(
                 // options.output, options.input,
                 out_fname, in_fname_pfx,
                 // options.input_fmt, options.extra_tags,
@@ -413,24 +426,99 @@ void CSearch::Run_priv(void)
         }
 
         if( batch_num >= start_batch_ && batch_num <= end_batch_ ) {
-            bool cont;
+            if( batch_init_data_.n_threads == 1 )
+            {
+                /*
+                 *  cont can be false only in case read insert size
+                 *  discovery is requested, which forces single
+                 *  threadedness
+                 */
+                bool cont;
 
-            switch( batch_init_data_.paired ) {
-                case true:  cont = batch.Run< true >(); break;
-                case false: cont = batch.Run< false >(); break;
+                switch( batch_init_data_.paired ) {
+                    case true:  cont = batch->Run< true >(); break;
+                    case false: cont = batch->Run< false >(); break;
+                }
+
+                // append batch results to the output
+                //
+
+                // stop if needed
+                //
+                if( !cont ) break;
             }
+            else
+            {
+                // poll until a thread slot is free
+                //
+                while( true )
+                {
+                    for( auto ti( threads.begin() ); ti != threads.end(); )
+                    {
+                        if( ti->second.done )
+                        {
+                            ti->second.th->join();
+                            ti->second.th.reset();
+                            ti = threads.erase( ti );
+                        }
+                        else ++ti;
+                    }
 
-            if( !cont ) break;
+                    if( threads.size() == batch_init_data_.n_threads )
+                    {
+                        std::this_thread::sleep_for(
+                            std::chrono::seconds( 1 ) );
+                    }
+                    else break;
+                }
+
+                // start current batch in the new thread
+                //
+                std::shared_ptr< std::thread > th;
+
+                if( batch_init_data_.paired )
+                {
+                    th.reset( new std::thread(
+                        []( std::shared_ptr< CBatch > batch )
+                        { batch->Run< true >(); },
+                        batch ) );
+                }
+                else
+                {
+                    th.reset( new std::thread(
+                        []( std::shared_ptr< CBatch > batch )
+                        { batch->Run< false >(); },
+                        batch ) );
+                }
+
+                threads[batch_oid].done = false;
+                threads[batch_oid].th = th;
+
+                // check if we have some output to report
+                //
+            }
         }
         else M_TRACE( CTracer::INFO_LVL, "skipping batch " << 1 + batch_num );
 
-        start_qid = batch.EndQId();
+        ++batch_oid;
+        start_qid = batch->EndQId();
 
         if( !strict_batch_ || start_qid - batch_start_qid == batch_limit_ ) {
             batch_start_qid = start_qid;
             ++batch_num;
         }
     }
+
+    while( !threads.empty() )
+    {
+        auto ti( threads.begin() );
+        ti->second.th->join();
+        ti->second.th.reset();
+        threads.erase( ti );
+    }
+
+    // report the rest of the output
+    //
 }
 
 //------------------------------------------------------------------------------

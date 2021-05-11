@@ -150,6 +150,13 @@ class CBatch
         RunPass( bool skip_good, bool skip_bad );
 
         template< bool paired > bool Run(void);
+
+        template< bool paired > void Run( std::atomic< bool > & done )
+        {
+            Run< paired >();
+            done = true;
+        }
+
         template< int search_mode > bool DiscoverInsertSize( void );
         template< int search_mode > bool InterProcess( void );
         template< int search_mode, bool paired > void PostProcess(void);

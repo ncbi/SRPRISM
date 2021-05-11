@@ -255,6 +255,9 @@ template<> bool CBatch::Run< true >( void )
         else if( search_mode_ == SSearchMode::PARTIAL ) {
             PostProcess< SSearchMode::PARTIAL, false >();
         }
+        else if( search_mode_ == SSearchMode::BOUND_ERR ) {
+            PostProcess< SSearchMode::BOUND_ERR, false >();
+        }
         else SRPRISM_ASSERT( false );
 
         return false;
