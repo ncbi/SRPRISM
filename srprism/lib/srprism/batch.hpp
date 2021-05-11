@@ -139,7 +139,7 @@ class CBatch
         };
 
         CBatch( SBatchInitData & init_data, 
-                CSeqInput & in, TQueryOrdId start_qid );
+                CSeqInput & in, TQueryOrdId start_qid, Uint4 batch_oid );
         
         ~CBatch() { if( queries_p_.get() != 0 ) queries_p_->FreeQueryData(); }
 
@@ -266,6 +266,7 @@ class CBatch
         int search_mode_;
         Uint4 res_limit_;
         Uint4 final_res_limit_;
+        Uint4 batch_oid_;
         TQueryOrdId start_qid_;
         TQueryOrdId end_qid_;
         std::auto_ptr< CQueryStore > queries_p_;

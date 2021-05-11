@@ -363,12 +363,12 @@ void CSearch::Run_priv(void)
 
     batch_init_data_.paired = (in->NCols() == 2);
     TQueryOrdId start_qid( 0 ), batch_start_qid( 0 );
-    Uint4 batch_num( 0 );
+    Uint4 batch_num( 0 ), batch_oid( 0 );
 
     while( !in->Done() && batch_num <= end_batch_ ) {
         batch_init_data_.batch_limit = 
             batch_limit_ - (start_qid - batch_start_qid);
-        CBatch batch( batch_init_data_, *in, start_qid );
+        CBatch batch( batch_init_data_, *in, start_qid, batch_oid++ );
 
         if( batch_num >= start_batch_ && batch_num <= end_batch_ ) {
             bool cont;

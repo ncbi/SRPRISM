@@ -51,7 +51,7 @@ const double CBatch::ISD_ACCEPT_RATIO = 0.9;
 //------------------------------------------------------------------------------
 CBatch::CBatch( 
         SBatchInitData & init_data, 
-        CSeqInput & in, TQueryOrdId start_qid )
+        CSeqInput & in, TQueryOrdId start_qid, Uint4 batch_oid )
     : init_data_( init_data ),
       tmp_store_( init_data.tmpdir ),
       /*
@@ -67,6 +67,7 @@ CBatch::CBatch(
       use_sids_( init_data.use_sids ), use_qids_( init_data.use_qids ),
       search_mode_( init_data.search_mode ),
       final_res_limit_( init_data.res_limit + 1 ),
+      batch_oid_( batch_oid ),
       start_qid_( start_qid ), end_qid_( start_qid ), queries_p_( 0 ),
       out_p_( init_data.out_p ),
       paired_log_( init_data.paired_log )
@@ -107,7 +108,7 @@ CBatch::CBatch(
                     init_data.use_fixed_hc, (TWord)init_data.fixed_hc ) );
         queries_p_->Init< TScoringSys >( 
                 tmp_store_, rmap_, in, 
-                (size_t)init_data.batch_limit, init_data.n_err );
+                (size_t)init_data.batch_limit, init_data.n_err, batch_oid_ );
         queries_p_->SetResLimit< TScoringSys >( u_res_limit );
     }
     else if( search_mode_ == SSearchMode::PARTIAL ) {
@@ -131,7 +132,7 @@ CBatch::CBatch(
                     init_data.use_fixed_hc, (TWord)init_data.fixed_hc ) );
         queries_p_->Init< TScoringSys >( 
                 tmp_store_, rmap_, in, 
-                (size_t)init_data.batch_limit, init_data.n_err );
+                (size_t)init_data.batch_limit, init_data.n_err, batch_oid_ );
         queries_p_->SetResLimit< TScoringSys >( u_res_limit );
     }
     else if( search_mode_ == SSearchMode::SUM_ERR ) {
@@ -156,7 +157,7 @@ CBatch::CBatch(
                     init_data.use_fixed_hc, (TWord)init_data.fixed_hc ) );
         queries_p_->Init< TScoringSys >( 
                 tmp_store_, rmap_, in, 
-                (size_t)init_data.batch_limit, init_data.n_err );
+                (size_t)init_data.batch_limit, init_data.n_err, batch_oid_ );
         queries_p_->SetResLimit< TScoringSys >( u_res_limit );
     }
     else if( search_mode_ == SSearchMode::BOUND_ERR ) {
@@ -181,7 +182,7 @@ CBatch::CBatch(
                     init_data.use_fixed_hc, (TWord)init_data.fixed_hc ) );
         queries_p_->Init< TScoringSys >( 
                 tmp_store_, rmap_, in, 
-                (size_t)init_data.batch_limit, init_data.n_err );
+                (size_t)init_data.batch_limit, init_data.n_err, batch_oid_ );
         queries_p_->SetResLimit< TScoringSys >( u_res_limit );
     }
     else SRPRISM_ASSERT( false );
