@@ -943,6 +943,10 @@ int main( int argc, char * argv[] )
 
             CSearch search( options );
             search.Run();
+            /*
+            std::cerr << "FINISH" << std::endl;
+            return 0;
+            */
         }
         else if( command == MKIDX_CMD ) {
             CMkIdx::SOptions options;

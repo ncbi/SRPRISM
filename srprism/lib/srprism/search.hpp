@@ -47,6 +47,7 @@
 #include <srprism/sidmap.hpp>
 #include <srprism/batch.hpp>
 #include <srprism/out_base.hpp>
+#include <srprism/out_sam.hpp>
 
 #else
 
@@ -179,7 +180,7 @@ class CSearch
         void Validate( const SOptions & options ) const;
         void Run_priv(void);
 
-        std::auto_ptr< CMemoryManager > mem_mgr_p_;
+        std::shared_ptr< CMemoryManager > mem_mgr_p_;
         std::auto_ptr< CSIdMap > sidmap_p_;
         std::auto_ptr< CSeqStore > seqstore_p_;
 

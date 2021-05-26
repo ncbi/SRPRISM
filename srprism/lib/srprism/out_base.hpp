@@ -78,6 +78,7 @@ class COutBase
                 virtual bool Done( void ) const = 0;
 
                 TQueryOrdId QId( void ) const { return qn_; }
+                void SetQId( TQueryOrdId q_adj ) { qn_ = q_adj; }
 
             protected:
 
@@ -267,6 +268,7 @@ class COutBase
         void SetUpQueryInfo( CQueryStore const * qs, TQueryOrdId q_adj ) {
             qs_ = qs;
             q_adj_ = q_adj;
+            in_p_->SetQId( q_adj );
         }
 
         virtual void FinalizeBatch() {}

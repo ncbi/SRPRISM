@@ -34,6 +34,7 @@
 
 #include "../common/def.h"
 
+#include <atomic>
 #include <string>
 #include <memory>
 
@@ -111,7 +112,7 @@ class CBatch
             S_IPAM ipam_vec;
 
             // CMemoryManager * mem_mgr_p;
-            std::auto_ptr< CMemoryManager > mem_mgr_p;
+            std::shared_ptr< CMemoryManager > mem_mgr_p;
             CSeqStore * seqstore_p;
             // common::CTmpStore * out_tmp_store_p;
             // COutBase * out_p;
@@ -151,11 +152,26 @@ class CBatch
 
         template< bool paired > bool Run(void);
 
-        template< bool paired > void Run( std::atomic< bool > & done )
+        /*
+        template< bool paired > void Run( bool )
         {
             Run< paired >();
-            done = true;
+            // done = true;
+            done_ = true;
+            std::cerr << "FINISHED: " << batch_oid_ << std::endl;
         }
+        */
+
+        static void RunBatchPaired( CBatch * batch );
+        static void RunBatchSingle( CBatch * batch );
+        /*
+        template< bool paired > static void RunBatch( CBatch * batch )
+        {
+            batch->Run< paired >();
+            batch->done_ = true;
+            std::cerr << "FINISHED: " << batch->batch_oid_ << std::endl;
+        }
+        */
 
         template< int search_mode > bool DiscoverInsertSize( void );
         template< int search_mode > bool InterProcess( void );
@@ -173,6 +189,9 @@ class CBatch
 
         void SetBatchOutput( COutBase * out_p )
         { out_p_.reset( out_p ); }
+
+        std::string GetTmpName( std::string const & pfx )
+        { return tmp_store_.Register( pfx ); }
 
     private:
 
@@ -286,6 +305,10 @@ class CBatch
         CSearchPassDef::SInitData pass_init_data_;
         std::unique_ptr< COutBase > out_p_;
         std::string paired_log_;
+
+public:
+
+        std::atomic< bool > done_;
 };
 
 END_NS( srprism )

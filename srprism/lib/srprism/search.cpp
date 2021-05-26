@@ -39,6 +39,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <list>
 
 #include "../common/util.hpp"
 #include "../common/trace.hpp"
@@ -351,10 +352,18 @@ void CSearch::Validate( const SOptions & opt ) const
 //------------------------------------------------------------------------------
 namespace
 {
+    /*
     struct thread_info
     {
         std::atomic< bool > done;
         std::shared_ptr< std::thread > th;
+    };
+    */
+    struct batch_info
+    {
+        Uint4 batch_oid;
+        std::shared_ptr< CBatch > batch;
+        std::shared_ptr< std::thread > thread;
     };
 }
 
@@ -390,8 +399,13 @@ void CSearch::Run_priv(void)
     Uint4 batch_num( 0 ), batch_oid( 0 );
 
     static char const * OUT_FNAME_PFX( "outsam-" );
-    std::map< Uint4, thread_info > threads;
+    // std::map< Uint4, thread_info > threads;
     Uint4 batch_out( 0 );
+    // std::atomic< bool > done;
+    // std::map< Uint4, std::shared_ptr< std::thread > > threads;
+    // std::map< Uint4, std::atomic< bool > > done;
+    // std::vector< std::shared_ptr< CBatch >  > batches;
+    std::list< batch_info > batches;
 
     /*
     COutSAM_Collator out(
@@ -403,6 +417,8 @@ void CSearch::Run_priv(void)
         batch_init_data_.batch_limit = 
             batch_limit_ - (start_qid - batch_start_qid);
         std::shared_ptr< CBatch > batch( std::make_shared< CBatch >( batch_init_data_, *in, start_qid, batch_oid ) );
+        // batches.emplace_back( std::make_shared< CBatch >( batch_init_data_, *in, start_qid, batch_oid ) );
+        // std::shared_ptr< CBatch > & batch( batches.back() );
 
         // setup local batch output
         {
@@ -413,7 +429,7 @@ void CSearch::Run_priv(void)
             auto out_fname( tmp_store_p_->Register( out_fname_pfx ) );
             batch->SetBatchOutput( new COutSAM(
                 // options.output, options.input,
-                out_fname, in_fname_pfx,
+                out_fname, batch->GetTmpName( in_fname_pfx ),
                 // options.input_fmt, options.extra_tags,
                 "fasta", extra_tags_,
                 // options.cmdline, options.sam_header,
@@ -459,18 +475,42 @@ void CSearch::Run_priv(void)
                     out_p_->Append( out_fname );
                 }
 
+                // batch.reset();
+
                 // stop if needed
                 //
                 if( !cont ) break;
             }
             else
             {
+
                 // poll until a thread slot is free
                 //
                 while( true )
                 {
-                    for( auto ti( threads.begin() ); ti != threads.end(); )
+                    // for( auto ti( threads.begin() ); ti != threads.end(); )
+                    for( auto ti( batches.begin() ); ti != batches.end(); )
                     {
+                        // std::cerr << "BATCH: " << batch_oid << " OID: " << ti->first << std::flush;
+                        if( ti->batch->done_ )
+                        {
+                            ti->thread->join();
+                            ti->thread.reset();
+                            ti->batch.reset();
+                            std::cerr << "PROCESSED: " << ti->batch_oid << std::endl;
+                            ti = batches.erase( ti );
+                        }
+                        else ++ti;
+
+                        /*
+                        if( batches[ti->first]->done_ )
+                        {
+                            ti->second->join();
+                            ti->second.reset();
+                            ti = threads.erase( ti );
+                            batches[ti->first].reset();
+                            std::cerr << "PROCESSED: " << ti->first << std::endl;
+                        }
                         if( ti->second.done )
                         {
                             ti->second.th->join();
@@ -478,9 +518,13 @@ void CSearch::Run_priv(void)
                             ti = threads.erase( ti );
                         }
                         else ++ti;
+                        */
+
+                        // std::cerr << std::endl;
                     }
 
-                    if( threads.size() == batch_init_data_.n_threads )
+                    // if( threads.size() == batch_init_data_.n_threads )
+                    if( batches.size() == batch_init_data_.n_threads )
                     {
                         std::this_thread::sleep_for(
                             std::chrono::seconds( 1 ) );
@@ -488,30 +532,59 @@ void CSearch::Run_priv(void)
                     else break;
                 }
 
+                batches.push_back( batch_info{ batch_oid, batch, std::shared_ptr< std::thread >() } );
+
                 // start current batch in the new thread
                 //
-                std::shared_ptr< std::thread > th;
+                std::cerr << "STARTING THREAD: " << batch_oid << std::endl;
+                // std::shared_ptr< std::thread > th;
+                // done[batch_oid] = false;
 
-                if( batch_init_data_.paired )
                 {
-                    th.reset( new std::thread(
-                        []( std::shared_ptr< CBatch > batch )
-                        { batch->Run< true >(); },
-                        batch ) );
-                }
-                else
-                {
-                    th.reset( new std::thread(
-                        []( std::shared_ptr< CBatch > batch )
-                        { batch->Run< false >(); },
-                        batch ) );
+                    // std::atomic< bool > & done( threads[batch_oid].done );
+
+                    if( batch_init_data_.paired )
+                    {
+                        batches.back().thread.reset( new std::thread(
+                            CBatch::RunBatchPaired, batches.back().batch.get() ) );
+                            // CBatch::RunBatch< true >, *batches.back().batch ) );
+                        /*
+                        th.reset( new std::thread(
+                            [&]( std::shared_ptr< CBatch > batch )
+                            { batch->Run< true >( true ); },
+                            // { batch->Run< true >( done[batch_oid] ); },
+                            batch ) );
+                        */
+                    }
+                    else
+                    {
+                        batches.back().thread.reset( new std::thread(
+                            CBatch::RunBatchSingle, batches.back().batch.get() ) );
+                            // CBatch::RunBatch< false >, batches.back().batch.get() ) );
+                        /*
+                        th.reset( new std::thread(
+                            [&]( std::shared_ptr< CBatch > batch )
+                            { batch->Run< false >( true ); },
+                            // { batch->Run< false >( done[batch_oid] ); },
+                            batch ) );
+                        */
+                    }
                 }
 
-                threads[batch_oid].done = false;
-                threads[batch_oid].th = th;
+                // threads[batch_oid].done = false;
+                // threads[batch_oid].th = th;
+                // threads[batch_oid] = th;
 
                 // check if we have some output to report
                 //
+                for( ; batch_out < batches.front().batch_oid ; ++batch_out )
+                {
+                    std::string out_fname_pfx( OUT_FNAME_PFX );
+                    out_fname_pfx += std::to_string( batch_out );
+                    auto out_fname( tmp_store_p_->Register( out_fname_pfx ) );
+                    out_p_->Append( out_fname );
+                }
+                /*
                 for( ; batch_out < batch_oid; ++batch_out )
                 {
                     if( threads.count( batch_out ) == 0 )
@@ -523,6 +596,7 @@ void CSearch::Run_priv(void)
                     }
                     else break;
                 }
+                */
             }
         }
         else M_TRACE( CTracer::INFO_LVL, "skipping batch " << 1 + batch_num );
@@ -536,26 +610,42 @@ void CSearch::Run_priv(void)
         }
     }
 
+    while( !batches.empty() )
+    {
+        auto & batch( batches.front() );
+        batch.thread->join();
+        batch.thread.reset();
+        batch.batch.reset();
+        batches.pop_front();
+    }
+
+    /*
     while( !threads.empty() )
     {
         auto ti( threads.begin() );
-        ti->second.th->join();
-        ti->second.th.reset();
+        // ti->second.th->join();
+        // ti->second.th.reset();
+        ti->second->join();
+        ti->second.reset();
         threads.erase( ti );
     }
+    */
 
     // report the rest of the output
     //
-    for( ; batch_out < batch_oid; ++batch_out )
+    if( batch_init_data_.n_threads > 1 )
     {
-        if( threads.count( batch_out ) == 0 )
+        for( ; batch_out < batch_oid; ++batch_out )
         {
-            std::string out_fname_pfx( OUT_FNAME_PFX );
-            out_fname_pfx += std::to_string( batch_out );
-            auto out_fname( tmp_store_p_->Register( out_fname_pfx ) );
-            out_p_->Append( out_fname );
+            // if( threads.count( batch_out ) == 0 )
+            // {
+                std::string out_fname_pfx( OUT_FNAME_PFX );
+                out_fname_pfx += std::to_string( batch_out );
+                auto out_fname( tmp_store_p_->Register( out_fname_pfx ) );
+                out_p_->Append( out_fname );
+            // }
+            // else break;
         }
-        else break;
     }
 }
 
