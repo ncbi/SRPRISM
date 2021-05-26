@@ -73,20 +73,6 @@ static const std::string CMD_DESCR = R"(
     Type 'srprism help mkindex' for more help on mkindex comamnd.
 )";
 
-/*
-static const std::string CMD_DESCR = "\
-\tAction to perform. Possible values are:\n\
-\t\t* help [search|mkindex] - \tget usage help;\n\
-\t\t                          \t\tgeneral help if no option is given;\
-\t\t                          \t\totherwise help on specified command.\n\
-\t\t* search                - \tsearch for occurrences of the \
-\t\t                          \tqueries in the database;\n\
-\t\t* mkindex               - \tcreate index from a source database.\n\
-\tType 'srprism help search' for more help on search command.\n\
-\tType 'srprism help mkindex' for more help on mkindex comamnd.\n\
-";
-*/
-
 //------------------------------------------------------------------------------
 // common options
 //
@@ -212,18 +198,6 @@ static const std::string SEARCH_ICOMPR_DESCR   = "\
 given is \"auto\" then the type of compression is guessed from the file \
 extension.\n\
 ";
-
-/*
-static const std::string SEARCH_OUTFMT_KEY     = "output-format";
-static const std::string SEARCH_OUTFMT_SKEY    = "O";
-static const std::string SEARCH_OUTFMT_LABEL   = "format-name";
-static const std::string SEARCH_OUTFMT_DEFAULT = "tabular";
-static const std::string SEARCH_OUTFMT_DESCR   = "\
-\tThe output format name. The possible values are \"tabular\", \"sam\". \
-See the software documentation for the details of different supported \
-output formats.\n\
-";
-*/
 
 static const std::string SEARCH_MEM_KEY     = "memory";
 static const std::string SEARCH_MEM_SKEY    = "M";
@@ -615,11 +589,6 @@ void SetArgsForSearch( COptionsParser & options_parser ) {
     options_parser.AddDefaultParam(
             SEARCH_NRES_KEY, SEARCH_NRES_SKEY, SEARCH_NRES_DEFAULT,
             SEARCH_NRES_DESCR, SEARCH_NRES_LABEL );
-    /*
-    options_parser.AddDefaultParam(
-            SEARCH_OUTFMT_KEY, SEARCH_OUTFMT_SKEY, SEARCH_OUTFMT_DEFAULT,
-            SEARCH_OUTFMT_DESCR, SEARCH_OUTFMT_LABEL );
-    */
     options_parser.AddFlag(
             SEARCH_SD_KEY, SEARCH_SD_SKEY, SEARCH_SD_DESCR );
     options_parser.AddFlag(
@@ -943,10 +912,6 @@ int main( int argc, char * argv[] )
 
             CSearch search( options );
             search.Run();
-            /*
-            std::cerr << "FINISH" << std::endl;
-            return 0;
-            */
         }
         else if( command == MKIDX_CMD ) {
             CMkIdx::SOptions options;

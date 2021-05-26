@@ -185,7 +185,6 @@ class CSearch
         std::auto_ptr< CSeqStore > seqstore_p_;
 
         std::unique_ptr< common::CTmpStore > tmp_store_p_;
-        // std::auto_ptr< COutBase > out_p_;
         std::unique_ptr< COutSAM_Collator > out_p_;
 
         std::string input_;

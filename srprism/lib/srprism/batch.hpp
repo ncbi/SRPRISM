@@ -79,7 +79,6 @@ class CBatch
     public:
 
         static const size_t TMP_RES_BUF_SIZE = 1024*1024ULL;
-        // static const char * TMP_OUT_FNAME;
 
         struct SBatchInitData
         {
@@ -111,12 +110,8 @@ class CBatch
 
             S_IPAM ipam_vec;
 
-            // CMemoryManager * mem_mgr_p;
             std::shared_ptr< CMemoryManager > mem_mgr_p;
             CSeqStore * seqstore_p;
-            // common::CTmpStore * out_tmp_store_p;
-            // COutBase * out_p;
-            // std::shared_ptr< COutBase > out_p;
 
             void * u_tmp_res_buf;
             size_t u_tmp_res_buf_size;
@@ -152,26 +147,8 @@ class CBatch
 
         template< bool paired > bool Run(void);
 
-        /*
-        template< bool paired > void Run( bool )
-        {
-            Run< paired >();
-            // done = true;
-            done_ = true;
-            std::cerr << "FINISHED: " << batch_oid_ << std::endl;
-        }
-        */
-
         static void RunBatchPaired( CBatch * batch );
         static void RunBatchSingle( CBatch * batch );
-        /*
-        template< bool paired > static void RunBatch( CBatch * batch )
-        {
-            batch->Run< paired >();
-            batch->done_ = true;
-            std::cerr << "FINISHED: " << batch->batch_oid_ << std::endl;
-        }
-        */
 
         template< int search_mode > bool DiscoverInsertSize( void );
         template< int search_mode > bool InterProcess( void );
@@ -286,7 +263,6 @@ class CBatch
             else return qs.HasRepHashes( qn ) ? 0 : 1;
         }
 
-        // SBatchInitData & init_data_;
         SBatchInitData init_data_;
         common::CTmpStore tmp_store_;
         std::unique_ptr< CTmpResMgr > u_tmpres_mgr_;
