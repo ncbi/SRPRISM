@@ -68,7 +68,7 @@ CBatch::CBatch(
     if( init_data_.n_threads > 1 )
     {
         auto free_space(
-            (init_data_.mem_mgr_p->GetFreeSpace())/init_data_.n_threads );
+            (init_data_.mem_mgr_p->GetFreeSpace())/(init_data_.n_threads + 1));
         init_data_.mem_mgr_p.reset( new CMemoryManager( free_space ) );
         char * t( (char *)init_data_.mem_mgr_p->Allocate( TMP_RES_BUF_SIZE ) );
         init_data_.u_tmp_res_buf = t;
