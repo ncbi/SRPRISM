@@ -377,6 +377,12 @@ III. DESCRIPTION
 
             The formats that have the above restriction are "fasta", 
             "fastq", "cfasta", "cfastq".
+            
+            For non-paired search and formats "[c]fast[aq]", a comma
+            separated list of files can be given. The files will be
+            processed consequtively in the order of appearance in the
+            list. Ids of reads from file with index <i> will have
+            ".<i>" attached to them.
 
             "sam" input is different in that it always
             consists of one input file. The mate pairing in reads

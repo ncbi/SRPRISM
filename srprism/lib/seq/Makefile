@@ -3,6 +3,7 @@ HEADERS =   cfasta_stream.hpp \
             fasta_stream.hpp \
             fastq_stream.hpp \
             paired_stream.hpp \
+            serial_stream.hpp \
             seqdef.hpp \
             seqinput.hpp \
             seqinput_factory.hpp \

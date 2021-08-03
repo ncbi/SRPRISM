@@ -252,6 +252,25 @@ class CBadNMerFilter
             TIdx idx_l, idx_r;
         };
 
+        void CheckSerial()
+        {
+            bool ok( true );
+
+            if( lut_.serial.size() != SLUTable::LUT_SIZE_1 ) ok = false;
+            else
+            {
+                for( auto s : lut_.serial )
+                {
+                    if( s >= serial_ ) { ok = false; break; }
+                }
+            }
+
+            if( !ok )
+            {
+                throw std::runtime_error( "BAD SERIAL" );
+            }
+        }
+
         void DumpLUT( void )
         {
             for( size_t i( 0 ); i < SLUTable::LUT_SIZE_1; ++i ) {
@@ -557,7 +576,7 @@ void CBadNMerFilter< t_sdata, t_qdata >::Init(
     filter_n_err_ = filter_n_err;
 
     if( ++serial_ == 0 ) { // reinit relevant data
-        if( filter_n_err > 0 ) lut_.serial.assign( SLUTable::LUT_SIZE_1, 0 );
+        lut_.serial.assign( SLUTable::LUT_SIZE_1, 0 );
         ++serial_;
     }
 
