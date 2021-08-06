@@ -32,6 +32,7 @@
 #include <ncbi_pch.hpp>
 
 #include "paired_stream.hpp"
+#include "serial_stream.hpp"
 #include "seqinput_multistream.hpp"
 #include "seqinput_sam.hpp"
 
@@ -68,6 +69,13 @@ std::auto_ptr< CSeqInput > CSeqInputFactory::MakeSeqInput(
     }
     else n_names = 1;
 
+    if( n_names > 1 && (type == "sam" || type == "sra") )
+    {
+        M_THROW(
+            CException, FORMAT,
+            "multiple inputs are not supported with input format " << type );
+    }
+
     if( type == "sam" ) {
         return std::auto_ptr< CSeqInput >(
                 new CSeqInput_SAM( name, max_cols == 2, c ) );
@@ -81,6 +89,10 @@ std::auto_ptr< CSeqInput > CSeqInputFactory::MakeSeqInput(
 #endif
     else if( n_names == 1 && max_cols == 2 ) {
         return MakePairedStream( type, name, c );
+    }
+    else if( n_names > 1 && max_cols == 1 )
+    {
+        return MakeSerialStream( type, name, c );
     }
     else return std::auto_ptr< CSeqInput >( 
             new CSeqInputMultiStream( name, type, max_cols, c ) );
