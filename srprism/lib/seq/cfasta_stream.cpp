@@ -1,4 +1,4 @@
-/*  $Id: cfasta_stream.cpp 205515 2010-09-20 15:51:04Z morgulis $
+/*  $Id: cfasta_stream.cpp 639115 2021-10-13 15:24:22Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -151,7 +151,7 @@ bool CColorFastaStream::Next(void)
 {
     if( done_ ) return false;
     while( state_ != E_READY ) ProcessLine();
-    seq_data_.size = seq_.size();
+    seq_data_.size = (TSeqSize)seq_.size();
     state_ = E_START;
     return true;
 }

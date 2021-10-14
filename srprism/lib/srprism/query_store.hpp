@@ -1,4 +1,4 @@
-/*  $Id: query_store.hpp 573034 2018-10-22 15:40:43Z morgulis $
+/*  $Id: query_store.hpp 639115 2021-10-13 15:24:22Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -547,7 +547,11 @@ class CQueryStore
 
             raw_data_start_ -= n_words;
             std::copy( raw_data, raw_data + n_words, raw_data_start_ );
-            std::copy( qdata, qdata + n_queries, query_data_end_ );
+
+            if (qdata != nullptr)
+            {
+                std::copy(qdata, qdata + n_queries, query_data_end_);
+            }
 
             while( n_queries-- > 0 ) {
                 (*query_data_end_++).SetRawData( raw_data_start_ );

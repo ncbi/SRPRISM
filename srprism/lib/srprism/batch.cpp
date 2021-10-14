@@ -1,4 +1,4 @@
-/*  $Id: batch.cpp 573027 2018-10-22 14:43:30Z morgulis $
+/*  $Id: batch.cpp 637057 2021-09-05 23:00:51Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -65,7 +65,7 @@ CBatch::CBatch(
       use_sids_( init_data.use_sids ), use_qids_( init_data.use_qids ),
       search_mode_( init_data.search_mode ),
       final_res_limit_( init_data.res_limit + 1 ),
-      start_qid_( start_qid ), end_qid_( start_qid ), queries_p_( 0 ),
+      start_qid_( start_qid ), end_qid_( start_qid ), queries_p_( nullptr ),
       out_p_( init_data.out_p ),
       paired_log_( init_data.paired_log )
 {

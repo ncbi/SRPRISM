@@ -1,4 +1,4 @@
-/*  $Id: seqinput_multistream.hpp 205414 2010-09-17 17:59:42Z morgulis $
+/*  $Id: seqinput_multistream.hpp 639115 2021-10-13 15:24:22Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -73,7 +73,7 @@ class CSeqInputMultiStream : public CSeqInput
                 common::CFileBase::TCompression c );
 
         virtual ~CSeqInputMultiStream( void );
-        virtual int NCols( void ) const { return streams_.size(); }
+        virtual int NCols( void ) const { return (int)streams_.size(); }
 
         virtual const TData & Data( int col ) const 
         { return streams_[col]->Data(); }

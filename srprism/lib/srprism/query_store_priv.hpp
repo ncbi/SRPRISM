@@ -1,4 +1,4 @@
-/*  $Id: query_store_priv.hpp 537014 2017-05-25 12:32:51Z morgulis $
+/*  $Id: query_store_priv.hpp 637057 2021-09-05 23:00:51Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -425,9 +425,9 @@ void CQueryStore::InitPriv(
         CTmpStore & tmpstore, const CRMap & rmap, 
         CSeqInput & in, size_t max_queries, size_t ambig_limit )
 {
-    size_t free_space( mem_mgr_.GetFreeSpace() );
+    size_t free_space( mem_mgr_.GetFreeSpaceSize() );
     char * free_space_start = 
-        (char *)mem_mgr_.Allocate( mem_mgr_.GetFreeSpace() );
+        (char *)mem_mgr_.Allocate( mem_mgr_.GetFreeSpaceSize() );
 
     try {
         InitialRead< t_scoring_sys >( 

@@ -1,4 +1,4 @@
-/*  $Id: align.cpp 540105 2017-06-30 21:12:28Z morgulis $
+/*  $Id: align.cpp 639115 2021-10-13 15:24:22Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -737,7 +737,7 @@ bool CHit::Extend(
         size_t err_idx( err_data_.size() );
         tb.Reset();
 
-        while( tb.NextError( err_data_[--err_idx] ) ) {
+        while( err_idx > 0 && tb.NextError( err_data_[--err_idx] ) ) {
             SErrRec & e( err_data_[err_idx] );
             e.qpos += qo_r - 1;
             bool d( e.err_type == SErrType::D );

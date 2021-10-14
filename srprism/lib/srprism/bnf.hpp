@@ -1,4 +1,4 @@
-/*  $Id: bnf.hpp 460305 2015-02-26 13:23:23Z morgulis $
+/*  $Id: bnf.hpp 637057 2021-09-05 23:00:51Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -589,7 +589,8 @@ void CBadNMerFilter< t_sdata, t_qdata >::Init(
 
     if( randomize_ ) {
         for( Uint4 i( 0 ); i < sdata_sz - 1; ++i ) {
-            Uint4 idx( random()%(sdata_sz - i) );
+            // Uint4 idx( random()%(sdata_sz - i) );
+            Uint4 idx( rand()%(sdata_sz - i) );
             std::swap( rnd_map_[idx], rnd_map_[sdata_sz - i - 1] );
         }
     }

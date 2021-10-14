@@ -1,4 +1,4 @@
-/*  $Id: batch_priv.hpp 591182 2019-08-12 16:55:27Z morgulis $
+/*  $Id: batch_priv.hpp 637057 2021-09-05 23:00:51Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -153,8 +153,8 @@ namespace {
         SResultsHolder( CMemoryManager & mem_mgr )
             : mem_mgr_( mem_mgr ), ptr_( 0 )
         {
-            sz_ = mem_mgr_.GetFreeSpace();
-            ptr_ = mem_mgr_.Allocate( mem_mgr_.GetFreeSpace() );
+            sz_ = mem_mgr_.GetFreeSpaceSize();
+            ptr_ = mem_mgr_.Allocate( mem_mgr_.GetFreeSpaceSize() );
         }
 
         ~SResultsHolder(void) { mem_mgr_.Free( ptr_ ); }
@@ -170,7 +170,7 @@ namespace {
     };
 
     Sint2 Quality( size_t n_res, size_t max_res )
-    { return n_res < max_res ? std::max( 100/n_res, 1UL ) : 0; }
+    { return n_res < max_res ? std::max( 100/n_res, (size_t)1UL ) : 0; }
 
     struct SALCounts
     {

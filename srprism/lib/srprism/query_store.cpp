@@ -1,4 +1,4 @@
-/*  $Id: query_store.cpp 431273 2014-04-02 17:10:44Z morgulis $
+/*  $Id: query_store.cpp 637057 2021-09-05 23:00:51Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -134,7 +134,7 @@ void CQueryStore::SaveQueryData( common::CTmpStore & tmpstore )
 size_t CQueryStore::GenerateDuplicateData( void )
 {
     size_t res( 0 );
-    size_t free_space( mem_mgr_.GetFreeSpace() );
+    size_t free_space( mem_mgr_.GetFreeSpaceSize() );
     size_t tail( free_space%sizeof( TQNum ) );
     dup_data_start_ = (TQNum *)mem_mgr_.Allocate( free_space );
     dup_data_end_ = dup_data_start_;
@@ -212,7 +212,7 @@ void CQueryStore::GenerateQueryInfo( void )
 //------------------------------------------------------------------------------
 void CQueryStore::ReadPrimaryQueryData( CTmpStore & tmpstore )
 {
-    size_t free_space( mem_mgr_.GetFreeSpace() );
+    size_t free_space( mem_mgr_.GetFreeSpaceSize() );
     query_data_start_ = query_data_end_ = 
         (CQueryData *)mem_mgr_.Allocate( free_space );
     raw_data_start_ = raw_data_end_ = 
@@ -314,7 +314,7 @@ void CQueryStore::ReadBackQueryData( CTmpStore & tmpstore )
     StartUpdate();
 
     if( query_data_start_ == 0 ) {
-        size_t free_space( mem_mgr_.GetFreeSpace() );
+        size_t free_space( mem_mgr_.GetFreeSpaceSize() );
         query_data_start_ = query_data_end_ = 
             (CQueryData *)mem_mgr_.Allocate( free_space );
         raw_data_start_ = raw_data_end_ = 

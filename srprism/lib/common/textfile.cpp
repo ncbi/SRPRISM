@@ -1,4 +1,4 @@
-/*  $Id: textfile.cpp 210557 2010-11-04 17:15:08Z morgulis $
+/*  $Id: textfile.cpp 637057 2021-09-05 23:00:51Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -83,25 +83,30 @@ const std::string CReadTextFile_CPPStream::GetLine_Impl()
 }
 
 //------------------------------------------------------------------------------
-std::auto_ptr< CReadTextFile > CReadTextFile::MakeReadTextFile( 
+// std::auto_ptr< CReadTextFile > CReadTextFile::MakeReadTextFile( 
+std::unique_ptr< CReadTextFile > CReadTextFile::MakeReadTextFile( 
         const std::string & name, TCompression c )
 {
     if( c == COMPRESSION_AUTO ) c = Name2CompressionType( name );
 
     switch( c ) {
         case COMPRESSION_NONE:
-            return std::auto_ptr< CReadTextFile >( 
+            // return std::auto_ptr< CReadTextFile >( 
+            return std::unique_ptr< CReadTextFile >( 
                     new CReadTextFile_CPPStream( name ) );
         case COMPRESSION_ZIP:
-            return std::auto_ptr< CReadTextFile >( 
+            // return std::auto_ptr< CReadTextFile >( 
+            return std::unique_ptr< CReadTextFile >(
                     new CReadTextFile_Zip( name ) );
         case COMPRESSION_BZIP:
-            return std::auto_ptr< CReadTextFile >( 
+            // return std::auto_ptr< CReadTextFile >( 
+            return std::unique_ptr< CReadTextFile >( 
                     new CReadTextFile_BZip( name ) );
         default: SRPRISM_ASSERT( false );
     }
 
-    return std::auto_ptr< CReadTextFile >( 0 );
+    return std::unique_ptr< CReadTextFile >( nullptr );
+    // return std::auto_ptr< CReadTextFile >( 0 );
 }
 
 //------------------------------------------------------------------------------
@@ -112,19 +117,22 @@ CWriteTextFile_CPPStream::CWriteTextFile_CPPStream( const std::string & name )
 { if( !os_.good() ) M_THROW( CFileBase::CException, OPEN, "for " << name_ ); }
 
 //------------------------------------------------------------------------------
-std::auto_ptr< CWriteTextFile > CWriteTextFile::MakeWriteTextFile( 
+// std::auto_ptr< CWriteTextFile > CWriteTextFile::MakeWriteTextFile( 
+std::unique_ptr< CWriteTextFile > CWriteTextFile::MakeWriteTextFile( 
         const std::string & name, TCompression c )
 {
     if( c == COMPRESSION_AUTO ) c = Name2CompressionType( name );
 
     switch( c ) {
         case COMPRESSION_NONE:
-            return std::auto_ptr< CWriteTextFile >( 
+            // return std::auto_ptr< CWriteTextFile >( 
+            return std::unique_ptr< CWriteTextFile >( 
                     new CWriteTextFile_CPPStream( name ) );
         default: SRPRISM_ASSERT( false );
     }
 
-    return std::auto_ptr< CWriteTextFile >( 0 );
+    return std::unique_ptr< CWriteTextFile >( nullptr );
+    // return std::auto_ptr< CWriteTextFile >( 0 );
 }
 
 #undef CHECK_STREAM

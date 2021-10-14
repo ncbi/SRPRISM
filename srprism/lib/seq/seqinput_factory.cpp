@@ -1,4 +1,4 @@
-/*  $Id: seqinput_factory.cpp 536683 2017-05-22 17:55:35Z morgulis $
+/*  $Id: seqinput_factory.cpp 637057 2021-09-05 23:00:51Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -47,7 +47,8 @@ START_NS( seq )
 USE_NS( common )
 
 //------------------------------------------------------------------------------
-std::auto_ptr< CSeqInput > CSeqInputFactory::MakeSeqInput( 
+// std::auto_ptr< CSeqInput > CSeqInputFactory::MakeSeqInput( 
+std::unique_ptr< CSeqInput > CSeqInputFactory::MakeSeqInput( 
         const std::string & type, const std::string & name, int max_cols,
         CFileBase::TCompression c )
 {
@@ -77,7 +78,8 @@ std::auto_ptr< CSeqInput > CSeqInputFactory::MakeSeqInput(
     }
 
     if( type == "sam" ) {
-        return std::auto_ptr< CSeqInput >(
+        // return std::auto_ptr< CSeqInput >(
+        return std::unique_ptr< CSeqInput >(
                 new CSeqInput_SAM( name, max_cols == 2, c ) );
     }
 #ifdef USE_SRA
@@ -94,7 +96,8 @@ std::auto_ptr< CSeqInput > CSeqInputFactory::MakeSeqInput(
     {
         return MakeSerialStream( type, name, c );
     }
-    else return std::auto_ptr< CSeqInput >( 
+    // else return std::auto_ptr< CSeqInput >( 
+    else return std::unique_ptr< CSeqInput >( 
             new CSeqInputMultiStream( name, type, max_cols, c ) );
 }
 

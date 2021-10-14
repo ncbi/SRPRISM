@@ -1,4 +1,4 @@
-/*  $Id: seqinput_sam.cpp 351958 2012-02-02 15:03:39Z morgulis $
+/*  $Id: seqinput_sam.cpp 639115 2021-10-13 15:24:22Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -200,8 +200,8 @@ bool CSeqInput_SAM::NextPaired( void )
 
         title_.clear();
         id_ = CheckIDs( e0.id, e1.id );
-        d_0_.size = (e0.idx == 0) ? e0.seq.size() : e1.seq.size();
-        d_1_.size = (e0.idx == 0) ? e1.seq.size() : e0.seq.size();
+        d_0_.size = (e0.idx == 0) ? (TSeqSize)e0.seq.size() : (TSeqSize)e1.seq.size();
+        d_1_.size = (e0.idx == 0) ? (TSeqSize)e1.seq.size() : (TSeqSize)e0.seq.size();
         s_[e0.idx].resize( e0.seq.size() );
         s_[e1.idx].resize( e1.seq.size() );
         std::copy( e0.seq.begin(), e0.seq.end(), s_[e0.idx].begin() );
@@ -229,7 +229,7 @@ bool CSeqInput_SAM::NextUnpaired( void )
 
         s_[0].resize( e.seq.size() );
         std::copy( e.seq.begin(), e.seq.end(), s_[0].begin() );
-        d_0_.size = e.seq.size();
+        d_0_.size = (TSeqSize)e.seq.size();
         q_[0] = e.qual;
         id_ = e.id;
         title_.clear();

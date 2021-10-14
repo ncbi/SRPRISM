@@ -1,4 +1,4 @@
-/*  $Id: search.cpp 591182 2019-08-12 16:55:27Z morgulis $
+/*  $Id: search.cpp 637057 2021-09-05 23:00:51Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -385,7 +385,8 @@ void CSearch::Run_priv(void)
                  "neither paired nor unpaired search is requested" );
     }
 
-    std::auto_ptr< CSeqInput > in( CSeqInputFactory::MakeSeqInput( 
+    // std::auto_ptr< CSeqInput > in( CSeqInputFactory::MakeSeqInput( 
+    std::unique_ptr< CSeqInput > in( CSeqInputFactory::MakeSeqInput( 
                 input_fmt_, input_, request_cols, input_c_ ) );
 
     if( force_paired_ && in->NCols() != 2 ) {

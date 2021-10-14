@@ -1,4 +1,4 @@
-/*  $Id: idx_reader.cpp 349335 2012-01-10 15:24:23Z morgulis $
+/*  $Id: idx_reader.cpp 639133 2021-10-13 17:24:59Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -43,12 +43,16 @@
 #	define OPEN  open
 #	define LSEEK lseek
 #	define READ  read
+
+#   define OPEN_FLAGS (O_RDONLY)
 #else
 #	include <io.h>
 
 #	define OPEN  _open
-#	define LSEEK _lseek
+#	define LSEEK _lseeki64
 #	define READ  _read
+
+#   define OPEN_FLAGS (O_RDONLY|O_BINARY)
 #endif
 
 #include <errno.h>
@@ -91,7 +95,7 @@ CIdxReader::CIdxReader( const std::string & name )
     : buf_( BUFSIZE, 0 ), fd_( -1 ), sz_( 0 ), start_( 0 ), off_( 0 ), 
       eof_( false ), n_seeks_( 0 ), n_reads_( 0 )
 {
-    fd_ = ::OPEN( name.c_str(), O_RDONLY );
+    fd_ = ::OPEN( name.c_str(), OPEN_FLAGS );
     
     if( fd_ < 0 ) {
         M_THROW( CException, SYSTEM, 

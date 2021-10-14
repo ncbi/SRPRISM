@@ -1,4 +1,4 @@
-/*  $Id: search_pass_priv.hpp 573077 2018-10-22 19:42:29Z morgulis $
+/*  $Id: search_pass_priv.hpp 639115 2021-10-13 15:24:22Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -86,7 +86,7 @@ CSearchPass_Base< search_mode >::CSearchPass_Base(
       tmp_store_( *init_data.tmp_store_p ),
       main_ma_( init_data.n_err, queries_.MaxQueryLen(), 1 ),
       ip_ma_( init_data.n_err, queries_.MaxQueryLen(), 1 ),
-      idx_( 0 ),
+      idx_( nullptr ),
       idx_basename_( init_data.index_basename ),
       res_limit_( init_data.res_limit ),
       repeat_threshold_( init_data.repeat_threshold ),
@@ -100,8 +100,10 @@ CSearchPass_Base< search_mode >::CSearchPass_Base(
       randomize_( init_data.randomize ),
       random_seed_( init_data.random_seed )
 {
-    if( random_seed_ ) srandom( time( 0 ) );
-    else srandom( 1 );
+    // if( random_seed_ ) srandom( time( 0 ) );
+    if( random_seed_ ) srand( time( 0 ) );
+    else srand( 1 );
+    // else srandom( 1 );
 
     ext_data_table_.reserve( QEXT_TABLE_SIZE );
 }
@@ -367,7 +369,8 @@ CSearchPass_ByHash< search_mode, HASH_BLOWUP, paired >::NextSubPass_Ext( void )
                     // try to append expanded query to the query store
                     //
                     if( !this->queries_.AddQueryData( 
-                                &wbuf_[0], n_words, &qcache_[0], n_q ) ) {
+                                &wbuf_[0], n_words, 
+                                (qcache_.empty() ? nullptr : &qcache_[0]), n_q ) ) {
                         break;
                     }
 
@@ -850,7 +853,8 @@ inline void CSearchPass< search_mode, hash, paired >::ProcessQuery(
             for( size_t i( 0 ); i < sz; ++i ) rnd_map_.push_back( i );
 
             for( size_t i( 0 ); i < sz - 1; ++i ) {
-                Uint4 idx( random()%(sz - i) );
+                // Uint4 idx( random()%(sz - i) );
+                Uint4 idx( rand()%(sz - i) );
                 std::swap( rnd_map_[idx], rnd_map_[sz - i - 1] );
             }
 
@@ -983,7 +987,8 @@ CSearchPass< search_mode, hash, paired >::ProcessSpecialQueryBlock_ExtExt(
                 for( size_t i( 0 ); i < sz; ++i ) rnd_map_.push_back( i );
 
                 for( size_t i( 0 ); i < sz - 1; ++i ) {
-                    Uint4 idx( random()%(sz - i) );
+                    // Uint4 idx( random()%(sz - i) );
+                    Uint4 idx( rand()%(sz - i) );
                     std::swap( rnd_map_[idx], rnd_map_[sz - i - 1] );
                 }
 

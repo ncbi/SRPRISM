@@ -1,4 +1,4 @@
-/*  $Id: mkidx.cpp 426095 2014-02-05 20:58:39Z morgulis $
+/*  $Id: mkidx.cpp 637057 2021-09-05 23:00:51Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -99,7 +99,8 @@ CMkIdx::CMkIdx( const SOptions & options )
         } while( pos1 != std::string::npos );
     }
     else if( !options.input_list.empty() ) {
-        std::auto_ptr< CReadTextFile > lst( 
+        // std::auto_ptr< CReadTextFile > lst( 
+        std::unique_ptr< CReadTextFile > lst( 
                 CReadTextFile::MakeReadTextFile( options.input_list ) );
 
         while( !lst->Eof() ) {
@@ -215,7 +216,8 @@ void CMkIdx::MkSeqStore( void )
 
     for( std::vector< std::string >::const_iterator ii( input_.begin() );
             ii != input_.end(); ++ii ) {
-        std::auto_ptr< CSeqInput > seq_in( CSeqInputFactory::MakeSeqInput( 
+        // std::auto_ptr< CSeqInput > seq_in( CSeqInputFactory::MakeSeqInput( 
+        std::unique_ptr< CSeqInput > seq_in( CSeqInputFactory::MakeSeqInput( 
                     infmt_, *ii, 1, input_c_ ) );
 
         while( !seq_in->Done() ) {
@@ -272,7 +274,7 @@ void CMkIdx::Run( void )
     CWriteBinFile map_file( output_ + IDX_MAP_SFX );
     CWriteBinFile rmap_file( output_ + IDX_REPMAP_SFX );
     size_t hash_key_start( 0 );
-    size_t free_space_size( mem_mgr.GetFreeSpace() );
+    size_t free_space_size( mem_mgr.GetFreeSpaceSize() );
     void * free_space( mem_mgr.Allocate( free_space_size ) );
     size_t pass_no( 1 );
     M_TRACE( CTracer::INFO_LVL, "generating index" );

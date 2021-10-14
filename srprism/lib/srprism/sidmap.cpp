@@ -1,4 +1,4 @@
-/*  $Id: sidmap.cpp 351764 2012-02-01 14:07:34Z morgulis $
+/*  $Id: sidmap.cpp 637057 2021-09-05 23:00:51Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -58,7 +58,8 @@ CSIdMap::CSIdMap( const std::string & name, CMemoryManager & mem_mgr )
 {
     try{
         std::string fname( name + FILE_SFX );
-        std::auto_ptr< CReadTextFile > fidmap( 
+        // std::auto_ptr< CReadTextFile > fidmap( 
+        std::unique_ptr< CReadTextFile > fidmap( 
                 common::CReadTextFile::MakeReadTextFile( fname ) );
 
         if( fidmap->Eof() ) {
@@ -71,8 +72,8 @@ CSIdMap::CSIdMap( const std::string & name, CMemoryManager & mem_mgr )
 
         offs_ = (size_t *)mem_mgr_.Allocate( sizeof( size_t )*(n_ids_ + 1) );
         std::fill( offs_, offs_ + n_ids_ + 1, 0 );
-        size_t data_size = mem_mgr_.GetFreeSpace();
-        data_ = (char *)mem_mgr_.Allocate( mem_mgr_.GetFreeSpace() );
+        size_t data_size = mem_mgr_.GetFreeSpaceSize();
+        data_ = (char *)mem_mgr_.Allocate( mem_mgr_.GetFreeSpaceSize() );
         size_t total( 0 );
 
         for( size_t lc( 0 ); lc < n_ids_; ++lc ) {

@@ -1,4 +1,4 @@
-/*  $Id: fastq_stream.cpp 342358 2011-10-27 14:24:39Z morgulis $
+/*  $Id: fastq_stream.cpp 639115 2021-10-13 15:24:22Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -196,7 +196,7 @@ bool CFastqStream::Next(void)
                  << name_ << ":" << in_->LineNo() );
     }
 
-    seq_data_.size = seq_.size();
+    seq_data_.size = (TSeqSize)seq_.size();
     state_ = E_START;
     return true;
 }
