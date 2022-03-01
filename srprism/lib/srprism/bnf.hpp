@@ -191,7 +191,7 @@ class CBadNMerFilter
 
         typedef struct
         {
-            ssize_t s_ext;
+            int64_t s_ext;
             TQExtSet q_ext_set;
         } TMatchSet;
 
@@ -380,7 +380,7 @@ class CBadNMerFilter
         int state_;
 
         TMatchSet match_set_;
-        ssize_t s_ext_idx_;
+        int64_t s_ext_idx_;
 
         size_t curr_q_ext_;
         TWord s_extension_, ext_mask_;
@@ -600,7 +600,7 @@ void CBadNMerFilter< t_sdata, t_qdata >::Init(
 template< typename t_sdata, typename t_qdata >
 inline int CBadNMerFilter< t_sdata, t_qdata >::NextAll( void )
 {
-    if( s_ext_idx_ == (ssize_t)sdata_sz_ ) return -1;
+    if( s_ext_idx_ == (int64_t)sdata_sz_ ) return -1;
 
     for( size_t i( 0 ); i < qdata_sz_; ++i ) {
         if( qdata_[i].count > 0 ) match_set_.q_ext_set.push_back( i );
@@ -613,7 +613,7 @@ inline int CBadNMerFilter< t_sdata, t_qdata >::NextAll( void )
 template< typename t_sdata, typename t_qdata >
 inline int CBadNMerFilter< t_sdata, t_qdata >::NextExact( void )
 {
-    if( s_ext_idx_ == (ssize_t)sdata_sz_ ) return -1;
+    if( s_ext_idx_ == (int64_t)sdata_sz_ ) return -1;
     if( s_ext_idx_ == 0 ) curr_q_ext_ = 0;
     s_extension_ = ((sdata_[match_set_.s_ext].Extension())&ext_mask_);
 
@@ -639,7 +639,7 @@ inline int CBadNMerFilter< t_sdata, t_qdata >::NextExact( void )
 template< typename t_sdata, typename t_qdata >
 inline int CBadNMerFilter< t_sdata, t_qdata >::NextExactRand( void )
 {
-    if( s_ext_idx_ == (ssize_t)sdata_sz_ ) return -1;
+    if( s_ext_idx_ == (int64_t)sdata_sz_ ) return -1;
     s_extension_ = ((sdata_[match_set_.s_ext].Extension())&ext_mask_);
     const t_qdata * e( qdata_ + qdata_sz_ ), * r( 0 );
     t_qdata key; key.ext = s_extension_;
@@ -731,7 +731,7 @@ inline void CBadNMerFilter< t_sdata, t_qdata >::NextPriv( void )
 template< typename t_sdata, typename t_qdata >
 inline int CBadNMerFilter< t_sdata, t_qdata >::NextOneErr( void )
 {
-    if( s_ext_idx_ == (ssize_t)sdata_sz_ ) return -1;
+    if( s_ext_idx_ == (int64_t)sdata_sz_ ) return -1;
     NextPriv< 1 >();
     return 1;
 }
@@ -740,7 +740,7 @@ inline int CBadNMerFilter< t_sdata, t_qdata >::NextOneErr( void )
 template< typename t_sdata, typename t_qdata >
 inline int CBadNMerFilter< t_sdata, t_qdata >::NextTwoErr( void )
 {
-    if( s_ext_idx_ == (ssize_t)sdata_sz_ ) return -1;
+    if( s_ext_idx_ == (int64_t)sdata_sz_ ) return -1;
     NextPriv< 2 >();
     return 2;
 }

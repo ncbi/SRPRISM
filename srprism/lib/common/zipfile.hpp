@@ -34,7 +34,9 @@
 
 #include <common/def.h>
 
+#ifndef WIN32
 #include <zlib.h>
+#endif
 
 #include <common/exception.hpp>
 #include <common/textfile.hpp>
@@ -67,8 +69,14 @@ class CReadTextFile_Zip : public CReadTextFile
         };
 
         CReadTextFile_Zip( const std::string & name );
+
+#ifndef WIN32
         virtual ~CReadTextFile_Zip() { gzclose( gzf_ ); }
         virtual bool Eof() const { return (gzeof( gzf_ ) == 1); }
+#else
+        virtual ~CReadTextFile_Zip() {}
+        virtual bool Eof() const { return true; }
+#endif
 
     protected:
 
@@ -76,7 +84,9 @@ class CReadTextFile_Zip : public CReadTextFile
 
     private:
 
+#ifndef WIN32
         gzFile gzf_;
+#endif
 };
 
 END_NS( common )

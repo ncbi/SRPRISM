@@ -40,6 +40,19 @@
 START_STD_SCOPES
 START_NS( common )
 
+#ifdef WIN32
+CReadTextFile_Zip::CReadTextFile_Zip(const std::string& name)
+    : CReadTextFile(name)
+{
+}
+
+const std::string CReadTextFile_Zip::GetLine_Impl(void)
+{
+    throw std::runtime_error("unimplemented");
+    return "";
+}
+
+#else
 //------------------------------------------------------------------------------
 CReadTextFile_Zip::CReadTextFile_Zip( const std::string & name )
     : CReadTextFile( name )
@@ -87,6 +100,7 @@ const std::string CReadTextFile_Zip::GetLine_Impl( void )
         else result.append( &chars[0] );
     }
 }
+#endif
 
 END_NS( common )
 END_STD_SCOPES
