@@ -40,6 +40,21 @@
 START_STD_SCOPES
 START_NS( common )
 
+#ifdef WIN32
+//------------------------------------------------------------------------------
+CReadTextFile_BZip::CReadTextFile_BZip(const std::string& name)
+    : CReadTextFile(name), eof_(false), f_(0)
+{
+    throw std::runtime_error("unimplemented");
+}
+
+const std::string CReadTextFile_BZip::GetLine_Impl(void)
+{
+    throw std::runtime_error("unimplemented");
+    return "";
+}
+
+#else
 //------------------------------------------------------------------------------
 CReadTextFile_BZip::CReadTextFile_BZip( const std::string & name )
     : CReadTextFile( name ), eof_( false ), f_( 0 ), bzf_( 0 )
@@ -111,6 +126,7 @@ const std::string CReadTextFile_BZip::GetLine_Impl( void )
         }
     }
 }
+#endif
 
 END_NS( common )
 END_STD_SCOPES

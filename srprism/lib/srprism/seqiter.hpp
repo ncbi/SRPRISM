@@ -98,13 +98,13 @@ class CBitIterator
         bool End( void ) const { return (off_ == len_); }
         bool Begin( void ) const { return (off_ == 0 ); }
 
-        CBitIterator & operator+=( ssize_t adj )
+        CBitIterator & operator+=( int64_t adj )
         {
             if( adj > 0 ) Advance( adj ); else Retreat( -adj );
             return *this;
         }
 
-        CBitIterator & operator-=( ssize_t adj )
+        CBitIterator & operator-=( int64_t adj )
         { return operator+=( -adj ); }
 
         CBitIterator & operator++( void ) { return operator+=( 1 ); }
@@ -167,10 +167,10 @@ class CSeqFwIterator : public CBitIterator< word_t, unit_t >
 
         CSeqFwIterator( const TBase & base_it ) : TBase( base_it ) {}
 
-        CSeqFwIterator & operator+=( ssize_t adj )
+        CSeqFwIterator & operator+=( int64_t adj )
         { TBase::operator+=( adj<<LSHIFT ); return *this; }
 
-        CSeqFwIterator & operator-=( ssize_t adj )
+        CSeqFwIterator & operator-=( int64_t adj )
         { return operator+=( -adj ); }
 
         CSeqFwIterator & operator++( void ) { return operator+=( 1 ); }
@@ -219,10 +219,10 @@ class CSeqRvIterator : public CBitIterator< word_t, unit_t >
         bool End( void ) const { return TBase::Begin(); }
         bool Begin( void ) const { return TBase::End(); }
 
-        CSeqRvIterator & operator+=( ssize_t adj )
+        CSeqRvIterator & operator+=( int64_t adj )
         { TBase::operator-=( adj<<LSHIFT ); return *this; }
 
-        CSeqRvIterator & operator-=( ssize_t adj )
+        CSeqRvIterator & operator-=( int64_t adj )
         { return operator+=( -adj ); }
 
         CSeqRvIterator & operator++( void ) { return operator+=( 1 ); }

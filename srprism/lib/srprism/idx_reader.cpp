@@ -73,7 +73,7 @@ namespace {
     template< typename int_t >
     void ReadInt( int_t & val, int fd, size_t & off )
     {
-        ssize_t bytes = READ( fd, (void *)&val, sizeof( int_t ) );
+        int64_t bytes = READ( fd, (void *)&val, sizeof( int_t ) );
 
         if( bytes < 0 ) {
             M_THROW( CIdxReader::CException, SYSTEM, 
@@ -144,7 +144,7 @@ void CIdxReader::ReadBuf(void)
 {
     size_t rest = sz_ - off_;
     for( TBuf::size_type i = 0; i < rest; ++i ) buf_[i] = buf_[off_ + i];
-    ssize_t n_bytes = ::READ( fd_, &buf_[0] + rest, BUFSIZE - rest );
+    int64_t n_bytes = ::READ( fd_, &buf_[0] + rest, BUFSIZE - rest );
     ++n_reads_;
     
     if( n_bytes < 0 ) {
