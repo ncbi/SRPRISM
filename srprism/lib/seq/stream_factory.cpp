@@ -1,4 +1,4 @@
-/*  $Id: stream_factory.cpp 205414 2010-09-17 17:59:42Z morgulis $
+/*  $Id: stream_factory.cpp 637057 2021-09-05 23:00:51Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -72,22 +72,27 @@ CStreamFactory::TStreamType CStreamFactory::StreamType(
 }
 
 //------------------------------------------------------------------------------
-std::auto_ptr< CStreamBase > CStreamFactory::MakeSeqStream(
+// std::auto_ptr< CStreamBase > CStreamFactory::MakeSeqStream(
+std::unique_ptr< CStreamBase > CStreamFactory::MakeSeqStream(
         TStreamType type, const std::string & name, 
         common::CFileBase::TCompression c )
 {
     switch( type ) {
         case STREAM_TYPE_FASTA:
-            return std::auto_ptr< CStreamBase >(
+            // return std::auto_ptr< CStreamBase >(
+            return std::unique_ptr< CStreamBase >(
                     new CFastaStream( name, c ) );
         case STREAM_TYPE_FASTQ:
-            return std::auto_ptr< CStreamBase >(
+            // return std::auto_ptr< CStreamBase >(
+            return std::unique_ptr< CStreamBase >(
                     new CFastqStream( name, c ) );
         case STREAM_TYPE_CFASTA:
-            return std::auto_ptr< CStreamBase >(
+            // return std::auto_ptr< CStreamBase >(
+            return std::unique_ptr< CStreamBase >(
                     new CColorFastaStream( name, c ) );
         case STREAM_TYPE_CFASTQ:
-            return std::auto_ptr< CStreamBase >(
+            // return std::auto_ptr< CStreamBase >(
+            return std::unique_ptr< CStreamBase >(
                     new CColorFastqStream( name, c ) );
     }
 

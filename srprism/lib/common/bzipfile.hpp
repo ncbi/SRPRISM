@@ -36,7 +36,9 @@
 
 #include <cstdio>
 
+#ifndef WIN32
 #include <bzlib.h>
+#endif
 
 #include <common/exception.hpp>
 #include <common/textfile.hpp>
@@ -72,9 +74,11 @@ class CReadTextFile_BZip : public CReadTextFile
 
         virtual ~CReadTextFile_BZip() 
         { 
+#ifndef WIN32
             int err( 0 );
             BZ2_bzReadClose( &err, bzf_ );
             fclose( f_ );
+#endif
         }
 
         virtual bool Eof() const { return eof_; }
@@ -87,7 +91,9 @@ class CReadTextFile_BZip : public CReadTextFile
 
         bool eof_;
         FILE * f_;
+#ifndef WIN32
         BZFILE * bzf_;
+#endif
 };
 
 END_NS( common )

@@ -1,4 +1,4 @@
-/*  $Id: seqstore_factory.cpp 431273 2014-04-02 17:10:44Z morgulis $
+/*  $Id: seqstore_factory.cpp 637057 2021-09-05 23:00:51Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -50,7 +50,7 @@ CSeqStoreFactory::CSeqStoreFactory(
         size_t al_extend )
     : mem_mgr_( max_mem ), base_name_( base_name ), 
       alt_loc_spec_name_( alt_loc_spec_name ),
-      ss_outs_( 0 ), mss_outs_( 0 ), curr_pos_( 0 ),
+      ss_outs_( nullptr ), mss_outs_( nullptr ), curr_pos_( 0 ),
       ambig_map_size_( 0 ), ambig_data_size_( 0 ),
       segment_letters_( segment_letters ),
       min_seq_len_( common::SIntTraits< size_t >::MAX ),
@@ -236,7 +236,8 @@ void CSeqStoreFactory::SetUpSeqInfo( void )
     M_TRACE( CTracer::INFO_LVL, 
              "reading alternate loci specification from " << 
              alt_loc_spec_name_ );
-    std::auto_ptr< CReadTextFile > al_is( 
+    // std::auto_ptr< CReadTextFile > al_is( 
+    std::unique_ptr< CReadTextFile > al_is( 
             CReadTextFile::MakeReadTextFile( alt_loc_spec_name_ ) );
 
     while( !al_is->Eof() ) {

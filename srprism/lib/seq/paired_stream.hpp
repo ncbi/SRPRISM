@@ -1,4 +1,4 @@
-/*  $Id: paired_stream.hpp 351328 2012-01-27 16:17:31Z morgulis $
+/*  $Id: paired_stream.hpp 637057 2021-09-05 23:00:51Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -190,7 +190,8 @@ class CPairedStream : public CSeqInput
 };
 
 //------------------------------------------------------------------------------
-inline std::auto_ptr< CSeqInput > MakePairedStream( 
+// inline std::auto_ptr< CSeqInput > MakePairedStream( 
+inline std::unique_ptr< CSeqInput > MakePairedStream( 
         const std::string & type, const std::string & name,
         common::CFileBase::TCompression c )
 {
@@ -198,16 +199,20 @@ inline std::auto_ptr< CSeqInput > MakePairedStream(
 
     switch( typeval ) {
         case CStreamFactory::STREAM_TYPE_FASTA: 
-            return std::auto_ptr< CSeqInput >( 
+            // return std::auto_ptr< CSeqInput >( 
+            return std::unique_ptr< CSeqInput >( 
                     new CPairedStream< CFastaStream >( name, c ) );
         case CStreamFactory::STREAM_TYPE_FASTQ:
-            return std::auto_ptr< CSeqInput >( 
+            // return std::auto_ptr< CSeqInput >( 
+            return std::unique_ptr< CSeqInput >( 
                     new CPairedStream< CFastqStream >( name, c ) );
         case CStreamFactory::STREAM_TYPE_CFASTA:
-            return std::auto_ptr< CSeqInput >( 
+            // return std::auto_ptr< CSeqInput >( 
+            return std::unique_ptr< CSeqInput >( 
                     new CPairedStream< CColorFastaStream >( name, c ) );
         case CStreamFactory::STREAM_TYPE_CFASTQ:
-            return std::auto_ptr< CSeqInput >( 
+            // return std::auto_ptr< CSeqInput >( 
+            return std::unique_ptr< CSeqInput >( 
                     new CPairedStream< CColorFastqStream >( name, c ) );
         default: M_THROW( CPairedStreamException, TYPE, "(" << name << ")" );
     }

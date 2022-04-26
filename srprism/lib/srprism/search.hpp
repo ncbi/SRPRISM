@@ -1,4 +1,4 @@
-/*  $Id: search.hpp 536751 2017-05-23 13:07:55Z morgulis $
+/*  $Id: search.hpp 637057 2021-09-05 23:00:51Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -181,8 +181,8 @@ class CSearch
         void Run_priv(void);
 
         std::shared_ptr< CMemoryManager > mem_mgr_p_;
-        std::auto_ptr< CSIdMap > sidmap_p_;
-        std::auto_ptr< CSeqStore > seqstore_p_;
+        std::unique_ptr< CSIdMap > sidmap_p_;
+        std::unique_ptr< CSeqStore > seqstore_p_;
 
         std::unique_ptr< common::CTmpStore > tmp_store_p_;
         std::unique_ptr< COutSAM_Collator > out_p_;

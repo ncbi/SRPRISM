@@ -1,4 +1,4 @@
-/*  $Id: seqstore_factory.hpp 431273 2014-04-02 17:10:44Z morgulis $
+/*  $Id: seqstore_factory.hpp 637057 2021-09-05 23:00:51Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -210,12 +210,20 @@ class CSeqStoreFactory : public CSeqStoreBase
         TAmbigMask ambig_mask_;
         TSeqData seq_data_,
                  mask_data_;
+        std::unique_ptr< common::CWriteBinFile > ss_outs_;
+        std::unique_ptr< common::CWriteBinFile > mss_outs_;
+        std::unique_ptr< common::CWriteTextFile > idmap_outs_;
+        std::unique_ptr< common::CWriteBinFile > seqmap_outs_;
+        std::unique_ptr< common::CWriteBinFile > ambig_map_outs_;
+        std::unique_ptr< common::CWriteBinFile > ambig_data_outs_;
+        /*
         std::auto_ptr< common::CWriteBinFile > ss_outs_;
         std::auto_ptr< common::CWriteBinFile > mss_outs_;
         std::auto_ptr< common::CWriteTextFile > idmap_outs_;
         std::auto_ptr< common::CWriteBinFile > seqmap_outs_;
         std::auto_ptr< common::CWriteBinFile > ambig_map_outs_;
         std::auto_ptr< common::CWriteBinFile > ambig_data_outs_;
+        */
         TPos curr_pos_;
         size_t ambig_map_size_;
         size_t ambig_data_size_;

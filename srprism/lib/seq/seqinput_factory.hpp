@@ -1,4 +1,4 @@
-/*  $Id: seqinput_factory.hpp 351958 2012-02-02 15:03:39Z morgulis $
+/*  $Id: seqinput_factory.hpp 637057 2021-09-05 23:00:51Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -74,7 +74,8 @@ class CSeqInputFactory
             M_EXCEPT_CTOR( CException )
         };
 
-        static std::auto_ptr< CSeqInput > MakeSeqInput(
+        // static std::auto_ptr< CSeqInput > MakeSeqInput(
+        static std::unique_ptr< CSeqInput > MakeSeqInput(
                 const std::string & type,
                 const std::string & name,
                 int max_col,

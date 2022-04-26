@@ -1,4 +1,4 @@
-/*  $Id: tmpstore.cpp 205411 2010-09-17 17:42:11Z morgulis $
+/*  $Id: tmpstore.cpp 639115 2021-10-13 15:24:22Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -65,11 +65,18 @@ CTmpStore::CTmpStore( const std::string & tmp_dir_name )
     char templ[] = "XXXXXX";
     int fid( -1 );
 
+#ifndef WIN32
     if( (fid = mkstemp( templ )) == -1 ) {
         M_TRACE( CTracer::WARNING_LVL, 
                  "could not create unique temporary file suffix" );
     }
     else { CLOSE( fid ); UNLINK( templ ); }
+#else
+    if ((fid = mkstemp(templ)) != 0) {
+        M_TRACE(CTracer::WARNING_LVL,
+            "could not create unique temporary file suffix");
+    }
+#endif
 
     tmp_name_prefix_ = tmp_dir_name + FPATH_SEP + ".";
     int pid = GETPID();

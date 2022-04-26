@@ -1,4 +1,4 @@
-/*  $Id: batch.cpp 573027 2018-10-22 14:43:30Z morgulis $
+/*  $Id: batch.cpp 637057 2021-09-05 23:00:51Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -59,7 +59,7 @@ CBatch::CBatch(
       search_mode_( init_data.search_mode ),
       final_res_limit_( init_data.res_limit + 1 ),
       batch_oid_( batch_oid ),
-      start_qid_( start_qid ), end_qid_( start_qid ), queries_p_( 0 ),
+      start_qid_( start_qid ), end_qid_( start_qid ), queries_p_( nullptr ),
       paired_log_( init_data.paired_log ),
       done_( false )
 {
@@ -68,7 +68,7 @@ CBatch::CBatch(
     if( init_data_.n_threads > 1 )
     {
         auto free_space(
-            (init_data_.mem_mgr_p->GetFreeSpace())/(init_data_.n_threads + 1));
+            (init_data_.mem_mgr_p->GetFreeSpaceSize())/(init_data_.n_threads + 1));
         init_data_.mem_mgr_p.reset( new CMemoryManager( free_space ) );
         char * t( (char *)init_data_.mem_mgr_p->Allocate( TMP_RES_BUF_SIZE ) );
         init_data_.u_tmp_res_buf = t;

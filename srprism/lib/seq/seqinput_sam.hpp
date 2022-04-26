@@ -1,4 +1,4 @@
-/*  $Id: seqinput_sam.hpp 351958 2012-02-02 15:03:39Z morgulis $
+/*  $Id: seqinput_sam.hpp 637057 2021-09-05 23:00:51Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -137,7 +137,8 @@ class CSeqInput_SAM : public CSeqInput
 
         bool paired_;
         std::string name_;
-        std::auto_ptr< common::CReadTextFile > in_;
+        // std::auto_ptr< common::CReadTextFile > in_;
+        std::unique_ptr< common::CReadTextFile > in_;
 
         TData d_0_, d_1_;
         TSeq s_[MAX_COLS];

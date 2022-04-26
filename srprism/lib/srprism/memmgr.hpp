@@ -1,4 +1,4 @@
-/*  $Id: memmgr.hpp 351764 2012-02-01 14:07:34Z morgulis $
+/*  $Id: memmgr.hpp 637057 2021-09-05 23:00:51Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -92,7 +92,7 @@ class CMemoryManager
         void Free( void * ptr );
         void * Shrink( void * ptr, TSize request_bytes );
 
-        TSize GetFreeSpace( void ) const { return free_space_*sizeof( TUnit ); }
+        TSize GetFreeSpaceSize( void ) const { return free_space_*sizeof( TUnit ); }
 
     private:
 

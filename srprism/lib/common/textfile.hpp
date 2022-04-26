@@ -1,4 +1,4 @@
-/*  $Id: textfile.hpp 214315 2010-12-02 21:24:25Z morgulis $
+/*  $Id: textfile.hpp 637057 2021-09-05 23:00:51Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -83,7 +83,8 @@ class CReadTextFile : public CFileBase
 
         typedef common::Uint8 TSize;
 
-        static std::auto_ptr< CReadTextFile > MakeReadTextFile( 
+        // static std::auto_ptr< CReadTextFile > MakeReadTextFile( 
+        static std::unique_ptr< CReadTextFile > MakeReadTextFile( 
                 const std::string & name, TCompression c = COMPRESSION_AUTO );
 
         CReadTextFile( const std::string & name )
@@ -122,7 +123,8 @@ class CReadTextFile_CPPStream : public CReadTextFile
     private:
 
         std::istream & is_;
-        std::auto_ptr< std::istream > is_holder_;
+        std::unique_ptr< std::istream > is_holder_;
+        // std::auto_ptr< std::istream > is_holder_;
 };
 
 
@@ -131,7 +133,8 @@ class CWriteTextFile : public CFileBase
 {
     public:
 
-        static std::auto_ptr< CWriteTextFile > MakeWriteTextFile( 
+        // static std::auto_ptr< CWriteTextFile > MakeWriteTextFile( 
+        static std::unique_ptr< CWriteTextFile > MakeWriteTextFile(
                 const std::string & name, TCompression c = COMPRESSION_AUTO );
 
         CWriteTextFile( const std::string & name ) 
@@ -176,7 +179,8 @@ class CWriteTextFile_CPPStream : public CWriteTextFile
     private:
 
         std::ostream & os_;
-        std::auto_ptr< std::ostream > os_holder_;
+        std::unique_ptr< std::ostream > os_holder_;
+        // std::auto_ptr< std::ostream > os_holder_;
 };
 
 END_NS( common )

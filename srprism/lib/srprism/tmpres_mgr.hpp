@@ -1,4 +1,4 @@
-/*  $Id: tmpres_mgr.hpp 351764 2012-02-01 14:07:34Z morgulis $
+/*  $Id: tmpres_mgr.hpp 637057 2021-09-05 23:00:51Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -143,8 +143,13 @@ class CTmpResMgr
         common::CTmpStore & tmp_store_;
         CTmpResBuf mainbuf_;
         const std::string tmp_name_;
+        std::unique_ptr< common::CWriteBinFile > os_;
+        std::unique_ptr< common::CReadBinFile > is_;
+
+        /*
         std::auto_ptr< common::CWriteBinFile > os_;
         std::auto_ptr< common::CReadBinFile > is_;
+        */
 };
 
 END_NS( srprism )

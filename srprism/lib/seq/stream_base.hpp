@@ -1,4 +1,4 @@
-/*  $Id: stream_base.hpp 351328 2012-01-27 16:17:31Z morgulis $
+/*  $Id: stream_base.hpp 637057 2021-09-05 23:00:51Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -109,7 +109,8 @@ class CStreamBase
 
         std::string name_;
         TSeq seq_;
-        std::auto_ptr< common::CReadTextFile > in_;
+        // std::auto_ptr< common::CReadTextFile > in_;
+        std::unique_ptr< common::CReadTextFile > in_;
         TSeqId id_;
         TSeqTitle title_;
         TData seq_data_;

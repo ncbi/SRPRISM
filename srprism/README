@@ -105,7 +105,7 @@ III. DESCRIPTION
         to all modes. 
 
         --------------------------------------------------------------
-        input-compression
+        input-compression (linux only)
 
             value type:      string
             possible values: auto none gzip bzip2

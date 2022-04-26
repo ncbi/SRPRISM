@@ -1,4 +1,4 @@
-/*  $Id: text_formatter.cpp 205411 2010-09-17 17:42:11Z morgulis $
+/*  $Id: text_formatter.cpp 639115 2021-10-13 15:24:22Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -42,7 +42,7 @@ START_NS( common )
 //------------------------------------------------------------------------------
 static inline void _add_word( 
         std::string & result, std::string & word, Uint1 & c )
-{ result.append( word ); c += word.size(); word.clear(); }
+{ result.append( word ); c += (Uint1)word.size(); word.clear(); }
                                
 //------------------------------------------------------------------------------
 const std::string CTextFormatter::operator()( const std::string & text ) const

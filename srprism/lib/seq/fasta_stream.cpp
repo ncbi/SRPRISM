@@ -1,4 +1,4 @@
-/*  $Id: fasta_stream.cpp 205515 2010-09-20 15:51:04Z morgulis $
+/*  $Id: fasta_stream.cpp 639115 2021-10-13 15:24:22Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -124,7 +124,7 @@ bool CFastaStream::Next(void)
     if( done_ ) return false;
     while( state_ != E_READY && state_ != E_EMPTY ) ProcessLine();
     if( state_ == E_EMPTY ) return false;
-    seq_data_.size = seq_.size();
+    seq_data_.size = (TSeqSize)seq_.size();
     state_ = E_START;
     return true;
 }

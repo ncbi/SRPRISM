@@ -32,11 +32,13 @@
 #ifndef __SRPRISM_ALIGN_HPP__
 #define __SRPRISM_ALIGN_HPP__
 
+/*
 #ifdef WIN32
 #	ifndef NCBI_CPP_TK
 #		define NCBI_CPP_TK 1
 #	endif
 #endif
+*/
 
 #ifndef NCBI_CPP_TK
 

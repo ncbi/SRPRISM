@@ -6,7 +6,7 @@ For questions regarding SRPRISM, please contact
     or
     Richa Agarwala (agarwala@ncbi.nlm.nih.gov)
 
-## Compilation
+## Linux Compilation
 
     Download current source code for SRPRISM
     $ git clone https://github.com/ncbi/SRPRISM
@@ -27,6 +27,28 @@ For questions regarding SRPRISM, please contact
     $ make
 
     After successful build, srprism executable can be found in app/ subdirectory.
+
+## Windows Compilation
+
+    Windows 64-bit version of SRPRISM was tested with MS Visual Studio 2019 and
+    MS Visual Studio 2019 Community Edition. In order to compile the following
+    is required:
+
+        - MS Visual Studio 2019 (or Community Edition of it);
+        - git with git bash (available here: https://git-scm.com/download/win
+
+    To compile:
+
+        - select a work directory (in the following $SRP_HOME is used as a
+            full pathname of that directory);
+        - start git bash and issue the following commands:
+            cd $SRP_HOME
+            git clone https://github.com/ncbi/SRPRISM
+        - start MS Visual Studio 2019 and open solution: $SRP_HOME\SRPRISM\windows\SRPRISM\SRPRISM.sln
+        - select Release/x64 configuration
+        - in the "Solution Explorer" pane, right click on the solution and select "build solution" in
+          the context menu
+        - the final executable SRPRISM.exe will be in $SRP_HOME\SRPRISM\windows\SRPRISM\x64\Release\
 
 ## Usage
 

@@ -1,4 +1,4 @@
-/*  $Id: search_pass.hpp 477203 2015-08-27 13:22:18Z morgulis $
+/*  $Id: search_pass.hpp 637057 2021-09-05 23:00:51Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -32,11 +32,13 @@
 #ifndef __SRPRISM_SEARCH_PASS_HPP__
 #define __SRPRISM_SEARCH_PASS_HPP__
 
+/*
 #ifdef WIN32
 #	ifndef NCBI_CPP_TK
 #		define NCBI_CPP_TK 1
 #	endif
 #endif
+*/
 
 #ifndef NCBI_CPP_TK
 
@@ -208,7 +210,8 @@ class CSearchPass_Base
         CExtensionSpaceAllocator main_ma_;  // matrix allocator for initial alignments
         CExtensionSpaceAllocator ip_ma_;    // matrix allocator for inplace alignments
 
-        std::auto_ptr< CIndexIterator > idx_; // index iterator
+        // std::auto_ptr< CIndexIterator > idx_; // index iterator
+        std::unique_ptr< CIndexIterator > idx_; // index iterator
         std::string idx_basename_;            // index base name
 
         size_t res_limit_;          // limit on the number of reported results 

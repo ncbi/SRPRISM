@@ -1,4 +1,4 @@
-/*  $Id: out_base.hpp 431273 2014-04-02 17:10:44Z morgulis $
+/*  $Id: out_base.hpp 637057 2021-09-05 23:00:51Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -89,7 +89,8 @@ class COutBase
         {
             public:
     
-                CInputAdapterSpec( std::auto_ptr< seq::CSeqInput > in ) 
+                // CInputAdapterSpec( std::auto_ptr< seq::CSeqInput > in ) 
+                CInputAdapterSpec( std::shared_ptr< seq::CSeqInput > in ) 
                     : in_( in ) {}
 
                 virtual std::string Qual( size_t idx ) const 
@@ -133,7 +134,8 @@ class COutBase
                 CInputAdapterSpec( const CInputAdapterSpec & );
                 CInputAdapterSpec & operator=( const CInputAdapterSpec & );
     
-                std::auto_ptr< seq::CSeqInput > in_;
+                std::shared_ptr< seq::CSeqInput > in_;
+                // std::auto_ptr< seq::CSeqInput > in_;
         };
 
     public:
@@ -174,7 +176,7 @@ class COutBase
                 bool no_qids,
                 CSeqStore * seq_store,
                 CSIdMap * sid_map )
-            : os_( 0 ), os_p_( 0 ), in_p_( 0 ), 
+            : os_( 0 ), os_p_( nullptr ), in_p_( nullptr ), 
               seq_store_( seq_store ), sid_map_( sid_map ), 
               input_fmt_( input_fmt ),
               skip_unmapped_( skip_unmapped ), paired_( false ),
@@ -292,8 +294,10 @@ class COutBase
         }
 
         std::ostream * os_;
-        std::auto_ptr< std::ostream > os_p_;
-        std::auto_ptr< CInputAdapter > in_p_;
+        std::unique_ptr< std::ostream > os_p_;
+        std::unique_ptr< CInputAdapter > in_p_;
+        // std::auto_ptr< std::ostream > os_p_;
+        // std::auto_ptr< CInputAdapter > in_p_;
         CSeqStore * seq_store_;
         CSIdMap * sid_map_;
         std::string input_fmt_;

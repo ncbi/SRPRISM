@@ -1,4 +1,4 @@
-/*  $Id: idx_reader.cpp 349335 2012-01-10 15:24:23Z morgulis $
+/*  $Id: idx_reader.cpp 639133 2021-10-13 17:24:59Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -43,12 +43,16 @@
 #	define OPEN  open
 #	define LSEEK lseek
 #	define READ  read
+
+#   define OPEN_FLAGS (O_RDONLY)
 #else
 #	include <io.h>
 
 #	define OPEN  _open
-#	define LSEEK _lseek
+#	define LSEEK _lseeki64
 #	define READ  _read
+
+#   define OPEN_FLAGS (O_RDONLY|O_BINARY)
 #endif
 
 #include <errno.h>
@@ -69,7 +73,7 @@ namespace {
     template< typename int_t >
     void ReadInt( int_t & val, int fd, size_t & off )
     {
-        ssize_t bytes = READ( fd, (void *)&val, sizeof( int_t ) );
+        int64_t bytes = READ( fd, (void *)&val, sizeof( int_t ) );
 
         if( bytes < 0 ) {
             M_THROW( CIdxReader::CException, SYSTEM, 
@@ -91,7 +95,7 @@ CIdxReader::CIdxReader( const std::string & name )
     : buf_( BUFSIZE, 0 ), fd_( -1 ), sz_( 0 ), start_( 0 ), off_( 0 ), 
       eof_( false ), n_seeks_( 0 ), n_reads_( 0 )
 {
-    fd_ = ::OPEN( name.c_str(), O_RDONLY );
+    fd_ = ::OPEN( name.c_str(), OPEN_FLAGS );
     
     if( fd_ < 0 ) {
         M_THROW( CException, SYSTEM, 
@@ -140,7 +144,7 @@ void CIdxReader::ReadBuf(void)
 {
     size_t rest = sz_ - off_;
     for( TBuf::size_type i = 0; i < rest; ++i ) buf_[i] = buf_[off_ + i];
-    ssize_t n_bytes = ::READ( fd_, &buf_[0] + rest, BUFSIZE - rest );
+    int64_t n_bytes = ::READ( fd_, &buf_[0] + rest, BUFSIZE - rest );
     ++n_reads_;
     
     if( n_bytes < 0 ) {

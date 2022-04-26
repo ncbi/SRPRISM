@@ -1,4 +1,4 @@
-/*  $Id: tmpres_mgr.cpp 358396 2012-04-02 16:27:41Z morgulis $
+/*  $Id: tmpres_mgr.cpp 637057 2021-09-05 23:00:51Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -87,7 +87,7 @@ CTmpResMgr::CTmpResMgr(
         void * mainbuf, size_t mainbuf_size, const std::string & tmp_name, 
         CTmpStore & tmp_store )
     : tmp_store_( tmp_store ), mainbuf_( mainbuf, mainbuf_size ), 
-      tmp_name_( tmp_name ), os_( 0 ), is_( 0 )
+      tmp_name_( tmp_name ), os_( nullptr ), is_( nullptr )
 {
 }
 

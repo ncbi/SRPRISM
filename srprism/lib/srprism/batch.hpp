@@ -1,4 +1,4 @@
-/*  $Id: batch.hpp 591182 2019-08-12 16:55:27Z morgulis $
+/*  $Id: batch.hpp 637057 2021-09-05 23:00:51Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -277,7 +277,8 @@ class CBatch
         Uint4 batch_oid_;
         TQueryOrdId start_qid_;
         TQueryOrdId end_qid_;
-        std::auto_ptr< CQueryStore > queries_p_;
+        // std::auto_ptr< CQueryStore > queries_p_;
+        std::unique_ptr< CQueryStore > queries_p_;
         CSearchPassDef::SInitData pass_init_data_;
         std::unique_ptr< COutBase > out_p_;
         std::string paired_log_;

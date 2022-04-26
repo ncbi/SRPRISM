@@ -1,4 +1,4 @@
-/*  $Id: stream_factory.hpp 205414 2010-09-17 17:59:42Z morgulis $
+/*  $Id: stream_factory.hpp 637057 2021-09-05 23:00:51Z morgulis $
  * ===========================================================================
  *
  *                            PUBLIC DOMAIN NOTICE
@@ -79,7 +79,8 @@ class CStreamFactory
         static const char * StreamTypeName( TStreamType stream_type );
         static TStreamType StreamType( const std::string & stream_type_name );
 
-        static std::auto_ptr< CStreamBase > MakeSeqStream(
+        // static std::auto_ptr< CStreamBase > MakeSeqStream(
+        static std::unique_ptr< CStreamBase > MakeSeqStream(
                 const std::string & stream_type_name,
                 const std::string & stream_name,
                 common::CFileBase::TCompression c )
@@ -88,7 +89,8 @@ class CStreamFactory
                     StreamType( stream_type_name ), stream_name, c );
         }
 
-        static std::auto_ptr< CStreamBase > MakeSeqStream(
+        // static std::auto_ptr< CStreamBase > MakeSeqStream(
+        static std::unique_ptr< CStreamBase > MakeSeqStream(
                 TStreamType stream_type, 
                 const std::string & stream_name,
                 common::CFileBase::TCompression c );
