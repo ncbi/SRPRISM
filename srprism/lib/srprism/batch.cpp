@@ -1114,14 +1114,14 @@ void CBatch::RunBatchPaired( CBatch * batch )
 {
     batch->Run< true >();
     batch->done_ = true;
-    std::cerr << "FINISHED: " << batch->batch_oid_ << std::endl;
+    M_TRACE( CTracer::INFO_LVL, "finished batch " << batch->batch_oid_ );
 }
 
 void CBatch::RunBatchSingle( CBatch * batch )
 {
     batch->Run< false >();
     batch->done_ = true;
-    std::cerr << "FINISHED: " << batch->batch_oid_ << std::endl;
+    M_TRACE( CTracer::INFO_LVL, "finished batch " << batch->batch_oid_ );
 }
 
 END_NS( srprism )

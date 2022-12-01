@@ -50,6 +50,7 @@
 #include <ostream>
 #include <sstream>
 #include <string>
+#include <thread>
 
 #include <math.h>
 
@@ -143,7 +144,9 @@ class CTracer
         { 
             if( lvl >= Curr_Lvl_ && Tr_Stream_ != 0 ) {
                 std::lock_guard< std::mutex > lock( mtx_ );
-                (*Tr_Stream_) << Level2Str[lvl] << msg
+                (*Tr_Stream_) << Level2Str[lvl]
+                              << "tid:" << std::this_thread::get_id() << '\t'
+                              << msg
                               << " <" << file << ":" << line << ">" 
                               << std::endl;
             }
