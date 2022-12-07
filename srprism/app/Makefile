@@ -18,7 +18,7 @@ LIBS = -pthread -lncbi-ngs-c++ -lngs-c++ -lncbi-ngs-static -lncbi-vdb-static -ld
 
 endif
 
-LIBS += -lz -lbz2
+LIBS += -lpthread -lz -lbz2
 
 all: srprism
 

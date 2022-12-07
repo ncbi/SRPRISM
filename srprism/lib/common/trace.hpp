@@ -46,9 +46,11 @@
 
 #include <iostream>
 #include <iomanip>
+#include <mutex>
 #include <ostream>
 #include <sstream>
 #include <string>
+#include <thread>
 
 #include <math.h>
 
@@ -141,7 +143,10 @@ class CTracer
                 const std::string & msg )
         { 
             if( lvl >= Curr_Lvl_ && Tr_Stream_ != 0 ) {
-                (*Tr_Stream_) << Level2Str[lvl] << msg
+                std::lock_guard< std::mutex > lock( mtx_ );
+                (*Tr_Stream_) << Level2Str[lvl]
+                              << "tid:" << std::this_thread::get_id() << '\t'
+                              << msg
                               << " <" << file << ":" << line << ">" 
                               << std::endl;
             }
@@ -156,151 +161,10 @@ class CTracer
         static TLevel Curr_Lvl_;
         static bool alloc_;
 
-#endif
-
-};
-
-class CProgress
-{
-    public:
-
-#ifndef NCBI_CPP_TK
-
-        CProgress( 
-                Uint8 total, const std::string & msg,
-                double step = 1.0,
-                CTracer::TLevel lvl = CTracer::ERROR_LVL ) 
-            : total_( total ), current_( 0.0 ), 
-              step_( step ), lvl_( lvl ), msg_( msg )
-        {
-            if( lvl_ >= CTracer::Level() ) {
-                std::cerr << "\r" << msg_ << "0%          " << std::flush;
-            }
-        }
-
-        void Current( double current )
-        {
-            if( lvl_ >= CTracer::Level() ) {
-                double pold = 100.0*current_/total_;
-                double pnew = 100.0*current/total_;
-
-                if( fabs( pold - pnew ) >= step_ ) {
-                    current_ = current;
-                    std::cerr << "\r" << msg_ << std::setprecision( 4 ) 
-                              << pnew << "%        " << std::flush;
-                }
-            }
-        }
-
-        ~CProgress()
-        {
-            if( lvl_ >= CTracer::Level() ) {
-                std::cerr << "\r" << msg_ << "100%        " << std::endl;
-            }
-        }
-
-#else
-
-        CProgress( 
-                Uint8 total, const std::string & msg,
-                double step = 1.0,
-                CTracer::TLevel lvl = CTracer::ERROR_LVL ) 
-            : total_( total ), current_( 0.0 ), 
-              step_( step ), lvl_( lvl ), msg_( msg )
-        { NcbiCerr << "\r" << msg_ << "0%          " << std::flush; }
-
-        void Current( double current )
-        {
-            double pold = 100.0*current_/total_;
-            double pnew = 100.0*current/total_;
-
-            if( fabs( pold - pnew ) >= step_ ) {
-                current_ = current;
-                NcbiCerr << "\r" << msg_ << std::setprecision( 4 ) 
-                         << pnew << "%         " << std::flush;
-            }
-        }
-
-        ~CProgress() 
-        { NcbiCerr << "\r" << msg_ << "100%         " << std::endl; }
+        static std::mutex mtx_;
 
 #endif
 
-    private:
-
-        CProgress( const CProgress & );
-        CProgress & operator=( const CProgress & );
-
-        Uint8 total_;
-        double current_;
-        double step_;
-        CTracer::TLevel lvl_;
-        std::string msg_;
-};
-
-class CTicker
-{
-    public:
-
-#ifndef NCBI_CPP_TK
-
-        CTicker( Uint8 step, const std::string & start_msg,
-                 const std::string & end_msg = "done",
-                 CTracer::TLevel lvl = CTracer::ERROR_LVL )
-            : step_( step ), current_( 0 ), lvl_( lvl ), end_msg_( end_msg )
-        {
-            if( lvl_ >= CTracer::Level() ) {
-                std::cerr << start_msg << "..." << std::flush;
-            }
-        }
-
-        void Tick(void)
-        {
-            ++current_;
-            
-            if( current_ == step_ ) {
-                if( lvl_ >= CTracer::Level() ) { 
-                    std::cerr << '.' << std::flush; 
-                }
-
-                current_ = 0;
-            }
-        }
-
-        ~CTicker(void) 
-        {
-            if( lvl_ >= CTracer::Level() ) {
-                std::cerr << end_msg_ << std::endl;
-            }
-        }
-
-#else
-
-        CTicker( Uint8 step, const std::string & start_msg,
-                 const std::string & end_msg = "done",
-                 CTracer::TLevel lvl = CTracer::ERROR_LVL )
-            : step_( step ), current_( 0 ), lvl_( lvl ), end_msg_( end_msg )
-        { NcbiCerr << start_msg << "..." << std::flush; }
-
-        void Tick( void ) 
-        { 
-            ++current_;
-
-            if( current_ == step_ ) {
-                NcbiCerr << "." << std::flush;
-                current_ = 0;
-            }
-        }
-
-        ~CTicker() { NcbiCerr << end_msg_ << std::endl; }
-
-#endif
-
-    private:
-
-        Uint8 step_, current_;
-        CTracer::TLevel lvl_;
-        std::string end_msg_;
 };
 
 END_NS( common )

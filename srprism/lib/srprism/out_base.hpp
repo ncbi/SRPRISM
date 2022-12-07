@@ -78,6 +78,7 @@ class COutBase
                 virtual bool Done( void ) const = 0;
 
                 TQueryOrdId QId( void ) const { return qn_; }
+                void SetQId( TQueryOrdId q_adj ) { qn_ = q_adj; }
 
             protected:
 
@@ -223,14 +224,6 @@ class COutBase
                 else ++n_res[(*i)->PairPos() + 1];
             }
 
-            /*
-            This was the original interpretation of mat_unmapped flag:
-            changed to reflect the state of individual results.
-
-            bool mate_unmapped( 
-                    n_res[0] == 0 && (n_res[1] == 0 || n_res[2] == 0) );
-            */
-
             bool mate_unmapped( n_res[0] == 0 );
 
             if( n_res[1] != 0 && n_res[2] != 0 ) {
@@ -277,6 +270,7 @@ class COutBase
         void SetUpQueryInfo( CQueryStore const * qs, TQueryOrdId q_adj ) {
             qs_ = qs;
             q_adj_ = q_adj;
+            in_p_->SetQId( q_adj );
         }
 
         virtual void FinalizeBatch() {}

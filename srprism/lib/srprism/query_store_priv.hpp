@@ -209,7 +209,7 @@ template< typename t_scoring >
 void CQueryStore::InitialRead( 
         common::CTmpStore & tmpstore, const CRMap & rmap, CSeqInput & in,
         size_t max_queries, size_t ambig_limit,
-        char * free_space_start, size_t free_space )
+        char * free_space_start, size_t free_space, Uint4 batch_oid )
 {
     SRPRISM_ASSERT( state_ == INIT );
 
@@ -232,7 +232,6 @@ void CQueryStore::InitialRead(
     free_space = ((char *)qraw_start - (char *)qdata_end );
 
     {
-        common::CTicker ticker( 100000, "reading queries" );
         int n_cols( in.NCols() );
 
         //######################################################################
@@ -252,6 +251,10 @@ void CQueryStore::InitialRead(
         qsz_estimate *= n_cols;
         //######################################################################
 
+        std::string input_dump_name( INPUT_DUMP_NAME );
+        input_dump_name += std::to_string( batch_oid );
+        CWriteTextFile_CPPStream idump( tmpstore.Register( input_dump_name ) );
+
         for( size_t i = 0; i < max_queries && !in.Done(); ) {
             if( qsz_estimate > free_space ) break;
             if( !in.Next() ) break;
@@ -261,6 +264,11 @@ void CQueryStore::InitialRead(
             for( size_t j = 0; j < (size_t)n_cols; ++j, ++i ) {
                 typedef CSeqInput::TData TSrcData;
                 const TSrcData & data( in.Data( j ) );
+
+                idump.LineOut( std::string( ">" ) + id );
+                idump.LineOut( std::string(
+                    data.seq.begin(), data.seq.begin() + data.size ) );
+
                 bool ignore = false;
                 TSeqSize data_size( data.size );
                 
@@ -373,8 +381,6 @@ void CQueryStore::InitialRead(
                     free_space -= 
                         max_n_hashes*sizeof( CQueryData ) + sizeof( TWord );
                 }
-
-                ticker.Tick();
             }
         }
     }
@@ -399,17 +405,17 @@ void CQueryStore::GenerateScoringData( size_t n_dup )
 template< typename t_scoring_sys >
 void CQueryStore::Init( 
         CTmpStore & tmpstore, const CRMap & rmap, CSeqInput & in, 
-        size_t max_queries, size_t ambig_limit )
+        size_t max_queries, size_t ambig_limit, Uint4 batch_oid )
 {
     switch( in.NCols() ) {
         case 1: 
             InitPriv< false, t_scoring_sys >( 
-                    tmpstore, rmap, in, max_queries, ambig_limit );
+                    tmpstore, rmap, in, max_queries, ambig_limit, batch_oid );
             break;
 
         case 2:
             InitPriv< true, t_scoring_sys >( 
-                    tmpstore, rmap, in, max_queries, ambig_limit );
+                    tmpstore, rmap, in, max_queries, ambig_limit, batch_oid );
             break;
 
         default:
@@ -423,7 +429,8 @@ void CQueryStore::Init(
 template< bool paired, typename t_scoring_sys >
 void CQueryStore::InitPriv( 
         CTmpStore & tmpstore, const CRMap & rmap, 
-        CSeqInput & in, size_t max_queries, size_t ambig_limit )
+        CSeqInput & in, size_t max_queries, size_t ambig_limit,
+        Uint4 batch_oid )
 {
     size_t free_space( mem_mgr_.GetFreeSpaceSize() );
     char * free_space_start = 
@@ -432,7 +439,7 @@ void CQueryStore::InitPriv(
     try {
         InitialRead< t_scoring_sys >( 
                 tmpstore, rmap, in, max_queries, ambig_limit,
-                free_space_start, free_space );
+                free_space_start, free_space, batch_oid );
     }
     catch( ... ) {
         mem_mgr_.Free( free_space_start );

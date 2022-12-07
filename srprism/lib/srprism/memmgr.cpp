@@ -40,6 +40,16 @@
 #include "../common/trace.hpp"
 #include "memmgr.hpp"
 
+//
+// uncomment next line to enable allocation tracing
+// #define M_TRACE_ALLOC_ENABLED 1
+
+#ifdef M_TRACE_ALLOC_ENABLED
+#   define M_TRACE_ALLOC M_TRACE
+#else
+#   define M_TRACE_ALLOC(lvl,msg)
+#endif
+
 START_STD_SCOPES
 START_NS( srprism )
 USE_NS( common )
@@ -49,7 +59,7 @@ CMemoryManager::CMemoryManager( TSize memory_limit )
     : free_space_( Bytes2Units( memory_limit ) )
 {
     SRPRISM_ASSERT( free_space_ > 0 );
-    M_TRACE( CTracer::INFO_LVL, "CMemoryManager(): " << free_space_ );
+    M_TRACE_ALLOC( CTracer::INFO_LVL, "CMemoryManager(): " << free_space_ );
 }
 
 //------------------------------------------------------------------------------
@@ -61,7 +71,7 @@ CMemoryManager::~CMemoryManager()
         free( p );
     }
 
-    M_TRACE( CTracer::INFO_LVL, "~CMemoryManager()" );
+    M_TRACE_ALLOC( CTracer::INFO_LVL, "~CMemoryManager()" );
 }
 
 //------------------------------------------------------------------------------
@@ -85,7 +95,7 @@ void * CMemoryManager::Allocate( TSize request_bytes )
 
     alloc_map_[(TBytePtr)result] = units;
     free_space_ -= units;
-    M_TRACE( CTracer::INFO_LVL, 
+    M_TRACE_ALLOC( CTracer::INFO_LVL, 
              "Allocate(): " << units << " (" << free_space_ << " free)" );
     return result;
 }
@@ -113,7 +123,7 @@ void CMemoryManager::Free( void * ptr )
     alloc_map_.erase( i );
     free( ptr );
     free_space_ += units;
-    M_TRACE( CTracer::INFO_LVL, 
+    M_TRACE_ALLOC( CTracer::INFO_LVL, 
              "De-Allocate(): " << units << " (" << free_space_ << " free)" );
 }
 
@@ -139,7 +149,7 @@ void * CMemoryManager::Shrink( void * ptr, TSize request_bytes )
     alloc_map_.erase( i );
     alloc_map_[(TBytePtr)ptr] = new_units;
     free_space_ += (old_units - new_units);
-    M_TRACE( CTracer::INFO_LVL, 
+    M_TRACE_ALLOC( CTracer::INFO_LVL, 
              "Re-Allocate(): " << old_units << " ---> " << new_units <<
              " (" << free_space_ << " free)" );
     return ptr;

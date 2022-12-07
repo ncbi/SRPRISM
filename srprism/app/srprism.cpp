@@ -42,7 +42,6 @@
 
 #include <srprism/search.hpp>
 #include <srprism/mkidx.hpp>
-#include <srprism/out_tabular.hpp>
 #include <srprism/out_sam.hpp>
 
 USE_NS( STD_SCOPES::common )
@@ -73,20 +72,6 @@ static const std::string CMD_DESCR = R"(
     Type 'srprism help search' for more help on search command.
     Type 'srprism help mkindex' for more help on mkindex comamnd.
 )";
-
-/*
-static const std::string CMD_DESCR = "\
-\tAction to perform. Possible values are:\n\
-\t\t* help [search|mkindex] - \tget usage help;\n\
-\t\t                          \t\tgeneral help if no option is given;\
-\t\t                          \t\totherwise help on specified command.\n\
-\t\t* search                - \tsearch for occurrences of the \
-\t\t                          \tqueries in the database;\n\
-\t\t* mkindex               - \tcreate index from a source database.\n\
-\tType 'srprism help search' for more help on search command.\n\
-\tType 'srprism help mkindex' for more help on mkindex comamnd.\n\
-";
-*/
 
 //------------------------------------------------------------------------------
 // common options
@@ -213,18 +198,6 @@ static const std::string SEARCH_ICOMPR_DESCR   = "\
 given is \"auto\" then the type of compression is guessed from the file \
 extension.\n\
 ";
-
-/*
-static const std::string SEARCH_OUTFMT_KEY     = "output-format";
-static const std::string SEARCH_OUTFMT_SKEY    = "O";
-static const std::string SEARCH_OUTFMT_LABEL   = "format-name";
-static const std::string SEARCH_OUTFMT_DEFAULT = "tabular";
-static const std::string SEARCH_OUTFMT_DESCR   = "\
-\tThe output format name. The possible values are \"tabular\", \"sam\". \
-See the software documentation for the details of different supported \
-output formats.\n\
-";
-*/
 
 static const std::string SEARCH_MEM_KEY     = "memory";
 static const std::string SEARCH_MEM_SKEY    = "M";
@@ -401,6 +374,14 @@ static const std::string SEARCH_SAM_HEADER_LABEL    = "true|false";
 static const std::string SEARCH_SAM_HEADER_DEFAULT  = "false";
 static const std::string SEARCH_SAM_HEADER_DESCR    = "\
 \tPrint the standard SAM header.\n\
+";
+
+static const std::string SEARCH_THREADS_KEY      = "threads";
+static const std::string SEARCH_THREADS_SKEY     = "";
+static const std::string SEARCH_THREADS_LABEL    = "integer";
+static const std::string SEARCH_THREADS_DEFAULT  = "1";
+static const std::string SEARCH_THREADS_DESCR    = "\
+\tNumber of threads to use for search.\n\
 ";
 
 #ifndef NDEBUG
@@ -608,11 +589,6 @@ void SetArgsForSearch( COptionsParser & options_parser ) {
     options_parser.AddDefaultParam(
             SEARCH_NRES_KEY, SEARCH_NRES_SKEY, SEARCH_NRES_DEFAULT,
             SEARCH_NRES_DESCR, SEARCH_NRES_LABEL );
-    /*
-    options_parser.AddDefaultParam(
-            SEARCH_OUTFMT_KEY, SEARCH_OUTFMT_SKEY, SEARCH_OUTFMT_DEFAULT,
-            SEARCH_OUTFMT_DESCR, SEARCH_OUTFMT_LABEL );
-    */
     options_parser.AddFlag(
             SEARCH_SD_KEY, SEARCH_SD_SKEY, SEARCH_SD_DESCR );
     options_parser.AddFlag(
@@ -634,6 +610,10 @@ void SetArgsForSearch( COptionsParser & options_parser ) {
             SEARCH_SAM_HEADER_KEY, SEARCH_SAM_HEADER_SKEY,
             SEARCH_SAM_HEADER_DEFAULT, SEARCH_SAM_HEADER_DESCR,
             SEARCH_SAM_HEADER_LABEL );
+    options_parser.AddDefaultParam(
+            SEARCH_THREADS_KEY, SEARCH_THREADS_SKEY,
+            SEARCH_THREADS_DEFAULT, SEARCH_THREADS_DESCR,
+            SEARCH_THREADS_LABEL );
 
 #ifndef NDEBUG
     options_parser.AddOptionalParam(
@@ -838,6 +818,7 @@ int main( int argc, char * argv[] )
             options_parser.Bind( SEARCH_SA_END_KEY, options.sa_end );
             options_parser.Bind( SEARCH_EXTRA_TAGS_KEY, options.extra_tags );
             options_parser.Bind( SEARCH_SAM_HEADER_KEY, options.sam_header );
+            options_parser.Bind( SEARCH_THREADS_KEY, options.n_threads );
 
             {
                 std::string search_mode_str;
@@ -866,14 +847,11 @@ int main( int argc, char * argv[] )
 
             if( command == SEARCH_CMD ) {
                 options_parser.Bind( SEARCH_NRES_KEY  , options.res_limit );
-                // options_parser.Bind( SEARCH_OUTFMT_KEY, options.output_fmt );
-                options.output_fmt = "sam";
                 options_parser.Bind( 
                         SEARCH_SKIP_UNMAPPED_KEY, options.skip_unmapped );
             }
             else {
                 options.res_limit = 2;
-                options.output_fmt = "sam";
                 options.skip_unmapped = false;
             }
 
@@ -920,6 +898,17 @@ int main( int argc, char * argv[] )
                 options_parser.Bind( SEARCH_FIX_HC_KEY, options.fixed_hc );
             }
 #endif
+
+            if( options.n_threads > 1 &&
+                (   !options.paired_log.empty() ||
+                    options.discover_sep ) )
+            {
+                M_TRACE(
+                    CTracer::WARNING_LVL,
+                    "--plog and --discover-insert require require single "
+                    "thread; setting number of threads to 1" );
+                options.n_threads = 1;
+            }
 
             CSearch search( options );
             search.Run();

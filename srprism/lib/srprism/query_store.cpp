@@ -43,6 +43,7 @@ USE_NS( common )
     
 //------------------------------------------------------------------------------
 const char * CQueryStore::QDUMP_NAME = "qdump";
+const char * CQueryStore::INPUT_DUMP_NAME = "batch-input-";
 
 //------------------------------------------------------------------------------
 void CQueryStore::ComputeQuerySpaceParams( 

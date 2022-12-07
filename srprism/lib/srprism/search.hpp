@@ -47,6 +47,7 @@
 #include <srprism/sidmap.hpp>
 #include <srprism/batch.hpp>
 #include <srprism/out_base.hpp>
+#include <srprism/out_sam.hpp>
 
 #else
 
@@ -80,7 +81,6 @@ class CSearch
         {
             SOptions()
                 : input_fmt( "fasta" ),
-                  output_fmt( "tabular" ),
                   tmpdir( "." ),
                   resconf_str( "0100" ),
                   input_compression( common::CFileBase::COMPRESSION_AUTO ),
@@ -92,6 +92,7 @@ class CSearch
                   pair_distance( 500 ),
                   pair_fuzz( 490 ),
                   max_qlen( 16 ),
+                  n_threads( 1 ),
                   sa_start( 1 ),
                   sa_end( 8192 ),
                   n_err( 0 ),
@@ -114,7 +115,6 @@ class CSearch
             std::string input;
             std::string output;
             std::string input_fmt;
-            std::string output_fmt;
             std::string tmpdir;
             std::string resconf_str;
             std::string paired_log;
@@ -132,6 +132,7 @@ class CSearch
             common::Uint2 pair_distance;
             common::Uint2 pair_fuzz;
             common::Uint2 max_qlen;
+            common::Uint2 n_threads;
             common::Sint2 sa_start;
             common::Sint2 sa_end;
             common::Uint1 n_err;
@@ -179,21 +180,16 @@ class CSearch
         void Validate( const SOptions & options ) const;
         void Run_priv(void);
 
-        std::unique_ptr< CMemoryManager > mem_mgr_p_;
+        std::shared_ptr< CMemoryManager > mem_mgr_p_;
         std::unique_ptr< CSIdMap > sidmap_p_;
         std::unique_ptr< CSeqStore > seqstore_p_;
-        std::unique_ptr< CScratchBitMap > scratch_p_;
-        std::unique_ptr< COutBase > out_p_;
-        /*
-        std::auto_ptr< CMemoryManager > mem_mgr_p_;
-        std::auto_ptr< CSIdMap > sidmap_p_;
-        std::auto_ptr< CSeqStore > seqstore_p_;
-        std::auto_ptr< CScratchBitMap > scratch_p_;
-        std::auto_ptr< COutBase > out_p_;
-        */
+
+        std::unique_ptr< common::CTmpStore > tmp_store_p_;
+        std::unique_ptr< COutSAM_Collator > out_p_;
 
         std::string input_;
         std::string input_fmt_;
+        std::string extra_tags_;
 
         common::CFileBase::TCompression input_c_;
 
@@ -201,6 +197,8 @@ class CSearch
         bool force_paired_;
         bool force_unpaired_;
         bool strict_batch_;
+        bool skip_unmapped_;
+        bool use_qids_;
 
         Uint4 start_batch_;
         Uint4 end_batch_;

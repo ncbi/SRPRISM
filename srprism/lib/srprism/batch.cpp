@@ -51,25 +51,39 @@ const double CBatch::ISD_ACCEPT_RATIO = 0.9;
 //------------------------------------------------------------------------------
 CBatch::CBatch( 
         SBatchInitData & init_data, 
-        CSeqInput & in, TQueryOrdId start_qid )
+        CSeqInput & in, TQueryOrdId start_qid, Uint4 batch_oid )
     : init_data_( init_data ),
       tmp_store_( init_data.tmpdir ),
-      u_tmpres_mgr_( 
-              init_data.u_tmp_res_buf, init_data.u_tmp_res_buf_size, 
-              "utmpres", tmp_store_ ),
-      p_tmpres_mgr_( 
-              init_data.p_tmp_res_buf, init_data.p_tmp_res_buf_size, 
-              "ptmpres", tmp_store_ ),
-      tmpres_mgr_p_( &p_tmpres_mgr_ ),
       seqstore_( *init_data.seqstore_p ), rmap_( init_data.index_basename ),
       use_sids_( init_data.use_sids ), use_qids_( init_data.use_qids ),
       search_mode_( init_data.search_mode ),
       final_res_limit_( init_data.res_limit + 1 ),
+      batch_oid_( batch_oid ),
       start_qid_( start_qid ), end_qid_( start_qid ), queries_p_( nullptr ),
-      out_p_( init_data.out_p ),
-      paired_log_( init_data.paired_log )
+      paired_log_( init_data.paired_log ),
+      done_( false )
 {
     seqstore_.Load();
+
+    if( init_data_.n_threads > 1 )
+    {
+        auto free_space(
+            (init_data_.mem_mgr_p->GetFreeSpaceSize())/(init_data_.n_threads + 1));
+        init_data_.mem_mgr_p.reset( new CMemoryManager( free_space ) );
+        char * t( (char *)init_data_.mem_mgr_p->Allocate( TMP_RES_BUF_SIZE ) );
+        init_data_.u_tmp_res_buf = t;
+        t = (char *)init_data_.mem_mgr_p->Allocate( TMP_RES_BUF_SIZE );
+        init_data_.p_tmp_res_buf = t;
+    }
+
+    u_tmpres_mgr_.reset( new CTmpResMgr(
+        init_data_.u_tmp_res_buf, init_data_.u_tmp_res_buf_size,
+        "utmpres", tmp_store_ ) );
+    p_tmpres_mgr_.reset( new CTmpResMgr(
+        init_data_.p_tmp_res_buf, init_data_.p_tmp_res_buf_size,
+        "ptmpres", tmp_store_ ) );
+    tmpres_mgr_p_ = p_tmpres_mgr_.get();
+
     Uint4 u_res_limit( 0 );
     
     if( search_mode_ == SSearchMode::DEFAULT ) {
@@ -82,18 +96,18 @@ CBatch::CBatch(
         res_limit_ = std::min( res_limit_, (Uint4)TScoringSys::MAX_N_RES );
 
         u_res_limit = 
-                init_data.paired 
+                init_data_.paired 
                     ? std::min( (Uint4)TScoringSys::MAX_N_RES, 5*res_limit_ ) 
                     : res_limit_;
 
         queries_p_.reset( new CQueryStore( 
-                    *init_data.mem_mgr_p, u_res_limit, 
-                    init_data.pair_distance, init_data.pair_fuzz, 
-                    init_data.sa_start, init_data.sa_end, init_data.n_err, 
-                    init_data.use_fixed_hc, (TWord)init_data.fixed_hc ) );
+                    *init_data_.mem_mgr_p, u_res_limit, 
+                    init_data_.pair_distance, init_data_.pair_fuzz, 
+                    init_data_.sa_start, init_data_.sa_end, init_data_.n_err, 
+                    init_data_.use_fixed_hc, (TWord)init_data_.fixed_hc ) );
         queries_p_->Init< TScoringSys >( 
                 tmp_store_, rmap_, in, 
-                (size_t)init_data.batch_limit, init_data.n_err );
+                (size_t)init_data_.batch_limit, init_data_.n_err, batch_oid_ );
         queries_p_->SetResLimit< TScoringSys >( u_res_limit );
     }
     else if( search_mode_ == SSearchMode::PARTIAL ) {
@@ -106,18 +120,18 @@ CBatch::CBatch(
         res_limit_ = std::min( res_limit_, (Uint4)TScoringSys::MAX_N_RES );
 
         u_res_limit = 
-                init_data.paired 
+                init_data_.paired 
                     ? std::min( (Uint4)TScoringSys::MAX_N_RES, 5*res_limit_ ) 
                     : res_limit_;
 
         queries_p_.reset( new CQueryStore( 
-                    *init_data.mem_mgr_p, u_res_limit, 
-                    init_data.pair_distance, init_data.pair_fuzz, 
-                    init_data.sa_start, init_data.sa_end, init_data.n_err, 
-                    init_data.use_fixed_hc, (TWord)init_data.fixed_hc ) );
+                    *init_data_.mem_mgr_p, u_res_limit, 
+                    init_data_.pair_distance, init_data_.pair_fuzz, 
+                    init_data_.sa_start, init_data_.sa_end, init_data_.n_err, 
+                    init_data_.use_fixed_hc, (TWord)init_data_.fixed_hc ) );
         queries_p_->Init< TScoringSys >( 
                 tmp_store_, rmap_, in, 
-                (size_t)init_data.batch_limit, init_data.n_err );
+                (size_t)init_data_.batch_limit, init_data_.n_err, batch_oid_ );
         queries_p_->SetResLimit< TScoringSys >( u_res_limit );
     }
     else if( search_mode_ == SSearchMode::SUM_ERR ) {
@@ -129,20 +143,20 @@ CBatch::CBatch(
                 final_res_limit_*seqstore_.OverlapFactor() );
         res_limit_ = std::min( res_limit_, (Uint4)TScoringSys::MAX_N_RES );
 
-        u_res_limit =  init_data.paired ? std::min( 
+        u_res_limit =  init_data_.paired ? std::min( 
                                             (Uint4)TScoringSys::MAX_N_RES, 
                                             5*res_limit_ ) 
                                         : res_limit_;
 
         queries_p_.reset( 
                 new CQueryStore( 
-                    *init_data.mem_mgr_p, u_res_limit,
-                    init_data.pair_distance, init_data.pair_fuzz,
-                    init_data.sa_start, init_data.sa_end, init_data.n_err,
-                    init_data.use_fixed_hc, (TWord)init_data.fixed_hc ) );
+                    *init_data_.mem_mgr_p, u_res_limit,
+                    init_data_.pair_distance, init_data_.pair_fuzz,
+                    init_data_.sa_start, init_data_.sa_end, init_data_.n_err,
+                    init_data_.use_fixed_hc, (TWord)init_data_.fixed_hc ) );
         queries_p_->Init< TScoringSys >( 
                 tmp_store_, rmap_, in, 
-                (size_t)init_data.batch_limit, init_data.n_err );
+                (size_t)init_data_.batch_limit, init_data_.n_err, batch_oid_ );
         queries_p_->SetResLimit< TScoringSys >( u_res_limit );
     }
     else if( search_mode_ == SSearchMode::BOUND_ERR ) {
@@ -154,20 +168,20 @@ CBatch::CBatch(
                 final_res_limit_*seqstore_.OverlapFactor() );
         res_limit_ = std::min( res_limit_, (Uint4)TScoringSys::MAX_N_RES );
 
-        u_res_limit =  init_data.paired ? std::min( 
+        u_res_limit =  init_data_.paired ? std::min( 
                                             (Uint4)TScoringSys::MAX_N_RES, 
                                             5*res_limit_ ) 
-                                        : res_limit_;
+                                         : res_limit_;
 
         queries_p_.reset( 
                 new CQueryStore( 
-                    *init_data.mem_mgr_p, u_res_limit,
-                    init_data.pair_distance, init_data.pair_fuzz,
-                    init_data.sa_start, init_data.sa_end, init_data.n_err,
-                    init_data.use_fixed_hc, (TWord)init_data.fixed_hc ) );
+                    *init_data_.mem_mgr_p, u_res_limit,
+                    init_data_.pair_distance, init_data_.pair_fuzz,
+                    init_data_.sa_start, init_data_.sa_end, init_data_.n_err,
+                    init_data_.use_fixed_hc, (TWord)init_data_.fixed_hc ) );
         queries_p_->Init< TScoringSys >( 
                 tmp_store_, rmap_, in, 
-                (size_t)init_data.batch_limit, init_data.n_err );
+                (size_t)init_data_.batch_limit, init_data_.n_err, batch_oid_ );
         queries_p_->SetResLimit< TScoringSys >( u_res_limit );
     }
     else SRPRISM_ASSERT( false );
@@ -176,22 +190,21 @@ CBatch::CBatch(
 
     // prepare pass initialization data
     {
-        pass_init_data_.search_stats = init_data.search_stats;
-        pass_init_data_.index_basename = init_data.index_basename;
+        pass_init_data_.search_stats = init_data_.search_stats;
+        pass_init_data_.index_basename = init_data_.index_basename;
         pass_init_data_.res_limit = u_res_limit;
-        pass_init_data_.repeat_threshold = init_data.repeat_threshold;
-        pass_init_data_.pair_distance = init_data.pair_distance;
-        pass_init_data_.pair_fuzz = init_data.pair_fuzz;
-        pass_init_data_.n_err = init_data.n_err;
+        pass_init_data_.repeat_threshold = init_data_.repeat_threshold;
+        pass_init_data_.pair_distance = init_data_.pair_distance;
+        pass_init_data_.pair_fuzz = init_data_.pair_fuzz;
+        pass_init_data_.n_err = init_data_.n_err;
 
-        pass_init_data_.ipam_vec = init_data.ipam_vec;
+        pass_init_data_.ipam_vec = init_data_.ipam_vec;
 
-        pass_init_data_.mem_mgr_p = init_data.mem_mgr_p;
+        pass_init_data_.mem_mgr_p = init_data_.mem_mgr_p.get();
         pass_init_data_.seqstore_p = &seqstore_;
         pass_init_data_.tmp_store_p = &tmp_store_;
-        pass_init_data_.scratch_p = init_data.scratch_p;
-        pass_init_data_.randomize = init_data.randomize;
-        pass_init_data_.random_seed = init_data.random_seed;
+        pass_init_data_.randomize = init_data_.randomize;
+        pass_init_data_.random_seed = init_data_.random_seed;
 
         pass_init_data_.queries_p = queries_p_.get();
     }
@@ -201,7 +214,7 @@ CBatch::CBatch(
 template<> bool CBatch::Run< true >( void )
 {
     pass_init_data_.paired_search = true;
-    pass_init_data_.tmpres_mgr_p = &u_tmpres_mgr_;
+    pass_init_data_.tmpres_mgr_p = u_tmpres_mgr_.get();
 
     if( pass_init_data_.n_err > 2 ) {
         RunPass< HASH_NORMAL, false >( false, true );
@@ -227,7 +240,7 @@ template<> bool CBatch::Run< true >( void )
     else SRPRISM_ASSERT( false );
 
     if( !cont ) {
-        tmpres_mgr_p_ = &u_tmpres_mgr_;
+        tmpres_mgr_p_ = u_tmpres_mgr_.get();
 
         if( search_mode_ == SSearchMode::DEFAULT ) {
             PostProcess< SSearchMode::DEFAULT, false >();
@@ -238,12 +251,15 @@ template<> bool CBatch::Run< true >( void )
         else if( search_mode_ == SSearchMode::PARTIAL ) {
             PostProcess< SSearchMode::PARTIAL, false >();
         }
+        else if( search_mode_ == SSearchMode::BOUND_ERR ) {
+            PostProcess< SSearchMode::BOUND_ERR, false >();
+        }
         else SRPRISM_ASSERT( false );
 
         return false;
     }
 
-    pass_init_data_.tmpres_mgr_p = &p_tmpres_mgr_;
+    pass_init_data_.tmpres_mgr_p = p_tmpres_mgr_.get();
     queries_p_->SetPairDistance( init_data_.pair_distance );
     queries_p_->SetPairFuzz( init_data_.pair_fuzz );
 
@@ -276,7 +292,7 @@ template<> bool CBatch::Run< true >( void )
 template<> bool CBatch::Run< false >( void )
 {
     pass_init_data_.paired_search = false;
-    pass_init_data_.tmpres_mgr_p = &p_tmpres_mgr_;
+    pass_init_data_.tmpres_mgr_p = p_tmpres_mgr_.get();
 
     if( pass_init_data_.n_err > 2 ) {
         RunPass< HASH_NORMAL, false >( false, true );
@@ -479,7 +495,7 @@ size_t CBatch::IdentifyPairs( CResult * s, size_t n_left, size_t n_right )
                     i->second->GetNId( 0 ), 
                     i->second->GetNDel( 0 ),
                     i->second->GetNGOpen( 0 ) ) ) {
-            CResult r( p_tmpres_mgr_.Save( CResult::EstimateLen( 
+            CResult r( p_tmpres_mgr_->Save( CResult::EstimateLen( 
                             2, i->first->NErr( 0 ), i->second->NErr( 0 ) ) ) );
             r.Init( 
                     qn, i->first->SNum(), 
@@ -561,7 +577,7 @@ void CBatch::RetainUnpairedResults( CResult * s, CResult * e )
 
         if( qn == pqn ) {
             if( queries_p_->DelResult< TScoring >( qn, *s ) ) {
-                CResult r( p_tmpres_mgr_.Save( s->GetRawLen() ) );
+                CResult r( p_tmpres_mgr_->Save( s->GetRawLen() ) );
                 r.Clone( *s );
             }
         }
@@ -846,11 +862,11 @@ bool CBatch::DiscoverInsertSize( void )
                      "processing results for queries " << bounds.first <<
                      " -- " << bounds.second );
             M_TRACE( CTracer::INFO_LVL, "loading results" );
-            u_tmpres_mgr_.LoadInit();
+            u_tmpres_mgr_->LoadInit();
             size_t n_res = 0;
 
             while( n_res < max_results ) {
-                *(--res_start) = u_tmpres_mgr_.Load();
+                *(--res_start) = u_tmpres_mgr_->Load();
                 if( res_start->Empty() ) { ++res_start; break; }
                 TQNum qn( res_start->QNum() );
 
@@ -992,11 +1008,11 @@ bool CBatch::InterProcess( void )
                      "processing results for queries " << bounds.first <<
                      " -- " << bounds.second );
             M_TRACE( CTracer::INFO_LVL, "loading results" );
-            u_tmpres_mgr_.LoadInit();
+            u_tmpres_mgr_->LoadInit();
             size_t n_res = 0;
 
             while( n_res < max_results ) {
-                *(--res_start) = u_tmpres_mgr_.Load();
+                *(--res_start) = u_tmpres_mgr_->Load();
                 if( res_start->Empty() ) { ++res_start; break; }
                 TQNum qn( res_start->QNum() );
 
@@ -1045,7 +1061,7 @@ bool CBatch::InterProcess( void )
                 }
             }
 
-            u_tmpres_mgr_.LoadFinal();
+            u_tmpres_mgr_->LoadFinal();
             M_TRACE( CTracer::INFO_LVL, "loaded " << n_res << " results" );
             std::stable_sort( 
                     res_start, res_end, CResult::SHLCompare( &seqstore_ ) );
@@ -1091,6 +1107,21 @@ bool CBatch::InterProcess( void )
              "number of cancelled queries: " << n_cancelled );
 
     return true;
+}
+
+//------------------------------------------------------------------------------
+void CBatch::RunBatchPaired( CBatch * batch )
+{
+    batch->Run< true >();
+    batch->done_ = true;
+    M_TRACE( CTracer::INFO_LVL, "finished batch " << batch->batch_oid_ );
+}
+
+void CBatch::RunBatchSingle( CBatch * batch )
+{
+    batch->Run< false >();
+    batch->done_ = true;
+    M_TRACE( CTracer::INFO_LVL, "finished batch " << batch->batch_oid_ );
 }
 
 END_NS( srprism )

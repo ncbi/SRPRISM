@@ -72,6 +72,8 @@ class CQueryStore
 {
     private:
 
+        typedef common::Uint4 Uint4;
+
         typedef int TState;
 
         static const TState INIT         = 0;
@@ -222,6 +224,7 @@ class CQueryStore
     public:
 
         static const char * QDUMP_NAME;
+        static const char * INPUT_DUMP_NAME;
 
         struct CException : public common::CException
         {
@@ -296,7 +299,8 @@ class CQueryStore
         template< typename t_scoring_sys >
         void Init( 
                 common::CTmpStore & tmpstore, const CRMap & rmap,
-                seq::CSeqInput & in, size_t max_queries, size_t ambig_limit );
+                seq::CSeqInput & in, size_t max_queries, size_t ambig_limit,
+                Uint4 batch_oid );
 
     private:
 
@@ -304,7 +308,7 @@ class CQueryStore
         void InitPriv(
                 common::CTmpStore & tmpstore,
                 const CRMap & rmap, seq::CSeqInput & in, size_t max_queries,
-                size_t ambig_limit );
+                size_t ambig_limit, Uint4 batch_oid );
 
         TQNum * DupDataStart( TQNum qn ) const
         {
@@ -811,7 +815,8 @@ class CQueryStore
                 common::CTmpStore & tmpstore, const CRMap & rmap,
                 seq::CSeqInput & in,
                 size_t max_queries, size_t ambig_limit,
-                char * free_space_start, size_t free_space );
+                char * free_space_start, size_t free_space,
+                Uint4 batch_oid );
 
         void SaveQueryData( common::CTmpStore & tmpstore );
         size_t GenerateDuplicateData( void );

@@ -13,7 +13,6 @@ HEADERS =   align.hpp \
             nmer_iterator.hpp \
             out_base.hpp \
             out_sam.hpp \
-            out_tabular.hpp \
             query_acct.hpp \
             query_data.hpp \
             query_store.hpp \
@@ -21,7 +20,6 @@ HEADERS =   align.hpp \
             result.hpp \
             rmap.hpp \
             scoring.hpp \
-            scratch.hpp \
             search.hpp \
             search_mode.hpp \
             search_pass.hpp \
@@ -46,7 +44,6 @@ SOURCES =   align.cpp \
             mkidx_pass.cpp \
             nmer_iterator.cpp \
             out_sam.cpp \
-            out_tabular.cpp \
             query_data.cpp \
             query_store.cpp \
             rmap.cpp \

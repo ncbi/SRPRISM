@@ -34,6 +34,7 @@
 
 #include "../common/def.h"
 
+#include <atomic>
 #include <string>
 #include <memory>
 
@@ -50,7 +51,6 @@
 #include <srprism/query_store.hpp>
 #include <srprism/search_pass.hpp>
 #include <srprism/out_base.hpp>
-#include <srprism/scratch.hpp>
 #include <srprism/rmap.hpp>
 
 #else
@@ -66,7 +66,6 @@
 #include <../src/internal/align_toolbox/srprism/lib/srprism/query_store.hpp>
 #include <../src/internal/align_toolbox/srprism/lib/srprism/search_pass.hpp>
 #include <../src/internal/align_toolbox/srprism/lib/srprism/out_base.hpp>
-#include <../src/internal/align_toolbox/srprism/lib/srprism/scratch.hpp>
 #include <../src/internal/align_toolbox/srprism/lib/srprism/rmap.hpp>
 
 #endif
@@ -78,6 +77,8 @@ START_NS( srprism )
 class CBatch
 {
     public:
+
+        static const size_t TMP_RES_BUF_SIZE = 1024*1024ULL;
 
         struct SBatchInitData
         {
@@ -93,6 +94,7 @@ class CBatch
             common::Uint2 pair_distance;
             common::Uint2 pair_fuzz;
             common::Uint2 max_qlen;
+            common::Uint2 n_threads;
             common::Sint2 sa_start;
             common::Sint2 sa_end;
             common::Uint1 n_err;
@@ -108,10 +110,8 @@ class CBatch
 
             S_IPAM ipam_vec;
 
-            CMemoryManager * mem_mgr_p;
+            std::shared_ptr< CMemoryManager > mem_mgr_p;
             CSeqStore * seqstore_p;
-            COutBase * out_p;
-            CScratchBitMap * scratch_p;
 
             void * u_tmp_res_buf;
             size_t u_tmp_res_buf_size;
@@ -138,7 +138,7 @@ class CBatch
         };
 
         CBatch( SBatchInitData & init_data, 
-                CSeqInput & in, TQueryOrdId start_qid );
+                CSeqInput & in, TQueryOrdId start_qid, Uint4 batch_oid );
         
         ~CBatch() { if( queries_p_.get() != 0 ) queries_p_->FreeQueryData(); }
 
@@ -146,6 +146,10 @@ class CBatch
         RunPass( bool skip_good, bool skip_bad );
 
         template< bool paired > bool Run(void);
+
+        static void RunBatchPaired( CBatch * batch );
+        static void RunBatchSingle( CBatch * batch );
+
         template< int search_mode > bool DiscoverInsertSize( void );
         template< int search_mode > bool InterProcess( void );
         template< int search_mode, bool paired > void PostProcess(void);
@@ -159,6 +163,12 @@ class CBatch
 
         TQueryOrdId StartQId(void) const { return start_qid_; }
         TQueryOrdId EndQId(void) const { return end_qid_; }
+
+        void SetBatchOutput( COutBase * out_p )
+        { out_p_.reset( out_p ); }
+
+        std::string GetTmpName( std::string const & pfx )
+        { return tmp_store_.Register( pfx ); }
 
     private:
 
@@ -253,10 +263,10 @@ class CBatch
             else return qs.HasRepHashes( qn ) ? 0 : 1;
         }
 
-        SBatchInitData & init_data_;
+        SBatchInitData init_data_;
         common::CTmpStore tmp_store_;
-        CTmpResMgr u_tmpres_mgr_;
-        CTmpResMgr p_tmpres_mgr_;
+        std::unique_ptr< CTmpResMgr > u_tmpres_mgr_;
+        std::unique_ptr< CTmpResMgr > p_tmpres_mgr_;
         CTmpResMgr * tmpres_mgr_p_;
         CSeqStore & seqstore_;
         CRMap rmap_;
@@ -264,13 +274,18 @@ class CBatch
         int search_mode_;
         Uint4 res_limit_;
         Uint4 final_res_limit_;
+        Uint4 batch_oid_;
         TQueryOrdId start_qid_;
         TQueryOrdId end_qid_;
         // std::auto_ptr< CQueryStore > queries_p_;
         std::unique_ptr< CQueryStore > queries_p_;
         CSearchPassDef::SInitData pass_init_data_;
-        COutBase * out_p_;
+        std::unique_ptr< COutBase > out_p_;
         std::string paired_log_;
+
+public:
+
+        std::atomic< bool > done_;
 };
 
 END_NS( srprism )
