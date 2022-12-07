@@ -616,6 +616,17 @@ III. DESCRIPTION
             in SAM output.
 
         --------------------------------------------------------------
+        threads
+
+            value type:         integer
+            possible values:    > 0
+            default:            1
+
+            Number of threads to use for search. Multi-threading is
+            implemented at batch level, so setting a batch size is
+            recommendeed when searching with multiple threads.
+
+        --------------------------------------------------------------
         tmpdir [T]
 
             value type:      string
