@@ -75,6 +75,12 @@ class CSeqInput
         const TSeqId & Id( void ) const { return id_; }
         const TSeqTitle & Title( void ) const { return title_; }
 
+        virtual size_t Skip( size_t n )
+        {
+            size_t i( 0 ); for( ; i < n && Next(); ++i );
+            return i;
+        }
+
     protected:
 
         typedef TData::TWord TWord;

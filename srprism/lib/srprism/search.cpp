@@ -356,7 +356,6 @@ void CSearch::Run_priv(void)
                  "neither paired nor unpaired search is requested" );
     }
 
-    // std::auto_ptr< CSeqInput > in( CSeqInputFactory::MakeSeqInput( 
     std::unique_ptr< CSeqInput > in( CSeqInputFactory::MakeSeqInput( 
                 input_fmt_, input_, request_cols, input_c_ ) );
 
@@ -381,29 +380,30 @@ void CSearch::Run_priv(void)
     while( !in->Done() && batch_num <= end_batch_ ) {
         batch_init_data_.batch_limit = 
             batch_limit_ - (start_qid - batch_start_qid);
-        std::shared_ptr< CBatch > batch( std::make_shared< CBatch >( batch_init_data_, *in, start_qid, batch_oid ) );
-
-        // setup local batch output
-        {
-            std::string in_fname_pfx( CQueryStore::INPUT_DUMP_NAME );
-            in_fname_pfx += std::to_string( batch_oid );
-            std::string out_fname_pfx( OUT_FNAME_PFX );
-            out_fname_pfx += std::to_string( batch_oid );
-            auto out_fname( tmp_store_p_->Register( out_fname_pfx ) );
-            batch->SetBatchOutput( new COutSAM(
-                out_fname, batch->GetTmpName( in_fname_pfx ),
-                "fasta", extra_tags_,
-                "", false,
-                CFileBase::COMPRESSION_NONE,
-                skip_unmapped_,
-                force_paired_, force_unpaired_,
-                !use_qids_,
-                ( batch_init_data_.search_mode == SSearchMode::DEFAULT ||
-                  batch_init_data_.search_mode == SSearchMode::SUM_ERR ),
-                seqstore_p_.get(), sidmap_p_.get() ) );
-        }
-
         if( batch_num >= start_batch_ && batch_num <= end_batch_ ) {
+            std::shared_ptr< CBatch > batch( std::make_shared< CBatch >(
+                batch_init_data_, *in, start_qid, batch_oid ) );
+
+            // setup local batch output
+            {
+                std::string in_fname_pfx( CQueryStore::INPUT_DUMP_NAME );
+                in_fname_pfx += std::to_string( batch_oid );
+                std::string out_fname_pfx( OUT_FNAME_PFX );
+                out_fname_pfx += std::to_string( batch_oid );
+                auto out_fname( tmp_store_p_->Register( out_fname_pfx ) );
+                batch->SetBatchOutput( new COutSAM(
+                    out_fname, batch->GetTmpName( in_fname_pfx ),
+                    "fasta", extra_tags_,
+                    "", false,
+                    CFileBase::COMPRESSION_NONE,
+                    skip_unmapped_,
+                    force_paired_, force_unpaired_,
+                    !use_qids_,
+                    ( batch_init_data_.search_mode == SSearchMode::DEFAULT ||
+                      batch_init_data_.search_mode == SSearchMode::SUM_ERR ),
+                    seqstore_p_.get(), sidmap_p_.get() ) );
+            }
+
             if( batch_init_data_.n_threads == 1 )
             {
                 /*
@@ -485,14 +485,20 @@ void CSearch::Run_priv(void)
                     out_p_->Append( out_fname );
                 }
             }
+
+            ++batch_oid;
+            start_qid = batch->EndQId();
+
+            if( !strict_batch_ || start_qid - batch_start_qid == batch_limit_ ) {
+                batch_start_qid = start_qid;
+                ++batch_num;
+            }
         }
-        else M_TRACE( CTracer::INFO_LVL, "skipping batch " << 1 + batch_num );
-
-        ++batch_oid;
-        start_qid = batch->EndQId();
-
-        if( !strict_batch_ || start_qid - batch_start_qid == batch_limit_ ) {
-            batch_start_qid = start_qid;
+        else
+        {
+            M_TRACE( CTracer::INFO_LVL, "skipping batch " << 1 + batch_num );
+            auto to_skip( force_paired_ ? batch_limit_/2 : batch_limit_ );
+            in->Skip( to_skip );
             ++batch_num;
         }
     }
