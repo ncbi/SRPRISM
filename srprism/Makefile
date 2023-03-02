@@ -57,6 +57,8 @@ $(NGSDEP):
 	cd $(NGS_DIR)/ngs/ngs-sdk; ./configure --prefix=$(NGS_PATH) --build-prefix=$(BUILD_PATH); make; make install ;
 	cd $(NGS_DIR); git clone https://github.com/ncbi/ncbi-vdb.git ;
 	cd $(NGS_DIR)/ncbi-vdb; ./configure --prefix=$(VDB_PATH) --build-prefix=$(BUILD_PATH); make; make install ;
+	cd $(NGS_DIR); git clone https://github.com/ncbi/sra-tools.git
+	cd $(NGS_DIR)/sra-tools; ./configure --prefix=$(VDB_PATH) --build-prefix=$(BUILD_PATH); make; make install
 	touch $@
 
 endif
