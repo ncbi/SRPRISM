@@ -60,6 +60,23 @@ CSeqInput_SRA::CSeqInput_SRA( std::string const & acc, int n_cols )
 }
 
 //------------------------------------------------------------------------------
+size_t CSeqInput_SRA::Skip( size_t n )
+{
+    if( done_ ) return 0;
+    start_ += n;
+    auto n_reads( run_.getReadCount() );
+
+    if( start_ > n_reads )
+    {
+        done_ = true;
+        return n_reads - (start_ - n);
+    }
+
+    it_ = run_.getReadRange( start_, n_reads, Read::all );
+    return n;
+}
+
+//------------------------------------------------------------------------------
 bool CSeqInput_SRA::Next( void )
 {
     if( done_ )

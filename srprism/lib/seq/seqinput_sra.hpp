@@ -78,6 +78,8 @@ public:
         return col == 0 ? d0_ : d1_;
     }
 
+    virtual size_t Skip( size_t n ) override;
+
 private:
 
     std::string acc_;
