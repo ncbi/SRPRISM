@@ -45,9 +45,6 @@
     <ClCompile Include="..\..\srprism\lib\srprism\out_sam.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\srprism\lib\srprism\out_tabular.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\srprism\lib\srprism\query_data.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

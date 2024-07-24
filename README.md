@@ -1,5 +1,5 @@
 # SRPRISM - Single Read Paired Read Indel Substitution Minimizer
-Version 3.3.0
+Version 3.3.3-pre
 
 For questions regarding SRPRISM, please contact
     Aleksandr Morgulis (morgulis@ncbi.nlm.nih.gov)
@@ -30,21 +30,23 @@ For questions regarding SRPRISM, please contact
 
 ## Windows Compilation
 
-    Windows 64-bit version of SRPRISM was tested with MS Visual Studio 2019 and
+    Windows 64-bit version of SRPRISM was tested with MS Visual Studio 2022 and
     MS Visual Studio 2019 Community Edition. In order to compile the following
     is required:
 
-        - MS Visual Studio 2019 (or Community Edition of it);
-        - git with git bash (available here: https://git-scm.com/download/win
+        - MS Visual Studio 2022 (or Community Edition of it);
+        - if cloning from github: git with git bash (available here: https://git-scm.com/download/win)
 
     To compile:
 
         - select a work directory (in the following $SRP_HOME is used as a
             full pathname of that directory);
-        - start git bash and issue the following commands:
+        - to clone the latest version: start git bash and issue the following commands:
             cd $SRP_HOME
             git clone https://github.com/ncbi/SRPRISM
-        - start MS Visual Studio 2019 and open solution: $SRP_HOME\SRPRISM\windows\SRPRISM\SRPRISM.sln
+        - to use the latest stable release: download the latest .zip archive from
+          github.com/ncbi/SRPRISM/releases and unpack it in $SRP_HOME
+        - start MS Visual Studio 2022 and open solution: $SRP_HOME\SRPRISM\windows\SRPRISM\SRPRISM.sln
         - select Release/x64 configuration
         - in the "Solution Explorer" pane, right click on the solution and select "build solution" in
           the context menu
