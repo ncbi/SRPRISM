@@ -31,7 +31,7 @@ For questions regarding SRPRISM, please contact
 ## Windows Compilation
 
     Windows 64-bit version of SRPRISM was tested with MS Visual Studio 2022 and
-    MS Visual Studio 2019 Community Edition. In order to compile the following
+    MS Visual Studio 2022 Community Edition. In order to compile the following
     is required:
 
         - MS Visual Studio 2022 (or Community Edition of it);
